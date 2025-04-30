@@ -1,0 +1,38 @@
+{
+  "name": "chess-app",
+  "version": "1.0.0",
+  "description": "Chess application with mobile and web support",
+  "main": "index.js",
+  "scripts": {
+    "start:backend": "cd backend && npm start",
+    "start:mobile": "cd ChessAppMobile && npm start",
+    "start:web": "cd ChessAppMobile && npm run web",
+    "start:frontend": "cd frontend && npm start",
+    "start:engine-api": "cd frontend && npm run start-engine-api",
+    "start:all": "node start-servers.js",
+    "install:all": "npm run install:backend && npm run install:mobile && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:mobile": "cd ChessAppMobile && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:web\"",
+    "dev:mobile": "concurrently \"npm run start:backend\" \"npm run start:mobile\"",
+    "dev:frontend": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "build:web": "cd ChessAppMobile && npm run build:web"
+  },
+  "keywords": [
+    "chess",
+    "react-native",
+    "expo",
+    "react",
+    "node",
+    "socket.io"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "firebase": "^11.6.1"
+  }
+}

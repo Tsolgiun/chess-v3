@@ -1,0 +1,54 @@
+/* Body styles are now handled by GlobalStyle.js */
+
+.page-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.slide-enter {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.slide-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.slide-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background-color: inherit;
+  transition: background-color 0.3s ease;
+}
