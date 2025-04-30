@@ -66,3 +66,12 @@ The backend exposes its own API endpoints that internally call the Frontend Engi
 - These ports can be configured using environment variables:
   - `ENGINE_API_PORT`: Port for the Frontend Engine API
   - `PORT`: Port for the Backend API
+
+## Security
+
+This project uses environment variables for sensitive configuration:
+
+- **Backend**: Firebase Admin SDK credentials are stored in `.env` (see `backend/SECURITY_FIX.md`)
+- **Frontend**: Firebase Web SDK configuration is stored in `.env.local` (see `frontend/SECURITY_FIX.md`)
+
+When setting up the project, you'll need to create these environment files with your own Firebase credentials. Example files are provided for reference.

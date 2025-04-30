@@ -68,8 +68,19 @@ The application uses styled-components for styling. TypeScript integration with 
 - Component prop typing
 - Style prop typing
 
+## Environment Variables
+
+This project uses environment variables for configuration, particularly for Firebase settings. To set up the environment:
+
+1. Create a `.env.local` file in the project root (copy from `.env.example`)
+2. Fill in the required Firebase configuration values
+3. Never commit `.env.local` or any other environment files with actual values to version control
+
+See `SECURITY_FIX.md` for more details on the security implementation.
+
 ## Future Improvements
 
 - Add more comprehensive type coverage
 - Implement unit tests with TypeScript
 - Add more TypeScript-specific features like discriminated unions for state management
+- Implement Firebase App Check for enhanced security
