@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import { Chess } from 'chess.js';
 import io, { Socket } from 'socket.io-client';
 import { GameContextType, GameProviderProps, Move, GameOptions, PlayerColor } from '../types';
+import { playMoveSound } from '../utils/sounds';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -139,6 +140,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
                 
                 updateStatus(newGame);
                 updateCapturedPieces(newGame);
+
+                // Play sound after confirming move is valid and state is updated
+                playMoveSound(moveNotation, newGame.isCheck());
 
                 if (socket && !isAIGame && !isAnalyzing) {
                     socket.emit('move', move);

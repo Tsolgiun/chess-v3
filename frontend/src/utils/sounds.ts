@@ -1,28 +1,54 @@
 // Sound effect utility for chess moves
-const moveSound: HTMLAudioElement = new Audio('/sounds/move.mp3');
-const captureSound: HTMLAudioElement = new Audio('/sounds/capture.mp3');
-const checkSound: HTMLAudioElement = new Audio('/sounds/check.mp3');
+let moveSound: HTMLAudioElement | null = null;
+let captureSound: HTMLAudioElement | null = null;
+let checkSound: HTMLAudioElement | null = null;
+let soundsLoaded = false;
 
-export const loadSounds = (): void => {
-    // Preload sounds
-    [moveSound, captureSound, checkSound].forEach(sound => {
-        sound.load();
-    });
+const createSound = (path: string): HTMLAudioElement => {
+    const audio = new Audio(`/sounds/${path}`);
+    audio.preload = 'auto';
+    return audio;
 };
 
-export const playMoveSound = (move: string, isCheck: boolean = false): void => {
+export const loadSounds = async (): Promise<void> => {
     try {
-        if (isCheck) {
-            checkSound.currentTime = 0;
-            checkSound.play();
-        } else if (move.includes('x')) {
-            captureSound.currentTime = 0;
-            captureSound.play();
-        } else {
-            moveSound.currentTime = 0;
-            moveSound.play();
+        // Create sound instances if they don't exist
+        moveSound = moveSound || createSound('move.mp3');
+        captureSound = captureSound || createSound('capture.mp3');
+        checkSound = checkSound || createSound('check.mp3');
+
+        // Load all sounds and wait for them to be ready
+        await Promise.all([
+            moveSound.load(),
+            captureSound.load(),
+            checkSound.load()
+        ]);
+
+        soundsLoaded = true;
+    } catch (error) {
+        console.error('Failed to load sounds. Please check if sound files exist in public/sounds/ directory:', error);
+        soundsLoaded = false;
+    }
+};
+
+export const playMoveSound = async (move: string, isCheck: boolean = false): Promise<void> => {
+    if (!soundsLoaded) {
+        await loadSounds();
+    }
+
+    try {
+        let soundToPlay = isCheck ? checkSound : 
+                         move.includes('x') ? captureSound : 
+                         moveSound;
+
+        if (soundToPlay) {
+            soundToPlay.currentTime = 0;
+            await soundToPlay.play();
         }
     } catch (error) {
-        console.warn('Failed to play sound:', error);
+        console.warn(`Failed to play sound for move ${move}:`, error);
+        if ((error as any)?.name === 'NotSupportedError') {
+            console.error('Sound files not found or not supported. Please verify files exist in public/sounds/ directory');
+        }
     }
 };

@@ -466,21 +466,29 @@ const Board: React.FC<BoardProps> = ({
 
     useEffect(() => {
         // Preload images and sounds
-        const preloadAssets = (): void => {
-            // Preload images
-            const pieces = ['pawn', 'rook', 'knight', 'bishop', 'queen', 'king'];
-            const colors = ['white', 'black'];
-            
-            colors.forEach(color => {
-                pieces.forEach(piece => {
-                    const img = new Image();
-                    img.src = `/pieces/${color}-${piece}.png`;
-                    img.onerror = (e) => console.error(`Failed to load piece image:`, e);
-                });
-            });
+        const preloadAssets = async (): Promise<void> => {
+            try {
+                // Preload images
+                const pieces = ['pawn', 'rook', 'knight', 'bishop', 'queen', 'king'];
+                const colors = ['white', 'black'];
+                
+                const imagePromises = colors.flatMap(color => 
+                    pieces.map(piece => new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = resolve;
+                        img.onerror = reject;
+                        img.src = `./pieces/${color}-${piece}.png`;
+                    }))
+                );
 
-            // Preload sounds
-            loadSounds();
+                // Load images and sounds in parallel
+                await Promise.all([
+                    ...imagePromises,
+                    loadSounds()
+                ]);
+            } catch (error) {
+                console.error('Error preloading assets:', error);
+            }
         };
         
         preloadAssets();
@@ -558,11 +566,6 @@ const Board: React.FC<BoardProps> = ({
 
                     const result = makeMove(move);
                     if (result) {
-                        // Play appropriate sound
-                        const moveNotation = game.history().slice(-1)[0];
-                        const isCheck = game.isCheck();
-                        playMoveSound(moveNotation, isCheck);
-                        
                         setSelectedSquare(null);
                         setValidMoves([]);
                         return;
