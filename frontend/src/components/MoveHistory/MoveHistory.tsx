@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { useGame } from '../../context/GameContext';
@@ -287,8 +287,6 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
     const theme = useTheme();
     const { game } = useGame();
     const containerRef = useRef<HTMLDivElement>(null);
-    const latestMoveRef = useRef<HTMLDivElement>(null);
-    const selectedMoveRef = useRef<HTMLDivElement>(null);
     
     // Group moves by pairs (White and Black)
     const groupedMoves: GroupedMove[] = [];
@@ -303,20 +301,6 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
             blackIndex: i + 1
         });
     }
-    
-    // Scroll to the latest move when moves are updated
-    useEffect(() => {
-        if (latestMoveRef.current && containerRef.current) {
-            latestMoveRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, [moves.length]);
-    
-    // Scroll to the selected move when it changes
-    useEffect(() => {
-        if (selectedMoveRef.current && containerRef.current) {
-            selectedMoveRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, [selectedMoveIndex]);
     
     const handleMoveClick = (index: number): void => {
         if (onMoveClick) {
@@ -409,7 +393,7 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
                                     isLatest={isLatestWhite}
                                     isSelected={selectedMoveIndex === group.whiteIndex}
                                     onClick={() => handleMoveClick(group.whiteIndex)}
-                                    ref={isLatestWhite ? latestMoveRef : (selectedMoveIndex === group.whiteIndex ? selectedMoveRef : null)}
+                                    
                                 >
                                     {whiteMove}
                                     {whiteAnnotation && (
@@ -432,7 +416,7 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
                                         isLatest={isLatestBlack}
                                         isSelected={selectedMoveIndex === group.blackIndex}
                                         onClick={() => handleMoveClick(group.blackIndex)}
-                                        ref={isLatestBlack ? latestMoveRef : (selectedMoveIndex === group.blackIndex ? selectedMoveRef : null)}
+                                        
                                     >
                                         {blackMove}
                                         {blackAnnotation && (
