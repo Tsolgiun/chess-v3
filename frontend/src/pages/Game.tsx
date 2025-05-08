@@ -359,7 +359,10 @@ const Game: React.FC = () => {
 
   useEffect(() => {
     let navigationTimer: NodeJS.Timeout;
-    if (status.includes('Game not found') || status.includes('Failed to join')) {
+    // Only set up navigation timer if it's not a game over state
+    if ((status.includes('Game not found') || status.includes('Failed to join')) && 
+        !gameOver && // Don't redirect if game over modal is showing
+        !isAIGame) {
       navigationTimer = setTimeout(() => {
         navigate('/', { replace: true });
       }, 2000);
@@ -367,7 +370,9 @@ const Game: React.FC = () => {
     return () => {
       if (navigationTimer) clearTimeout(navigationTimer);
     };
-  }, [status, navigate]);
+}, [status, navigate, isAIGame, gameOver]); // Add gameOver to dependencies
+
+
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -381,22 +386,24 @@ const Game: React.FC = () => {
     }
   };
 
-  if (status.includes('Game not found') || status.includes('Failed to join')) {
-    return (
-      <Container
-        variants={containerVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-      >
-        <NavBar />
-        <StatusMessage>
-          {status}
-          <p>Redirecting to home page...</p>
-        </StatusMessage>
-      </Container>
-    );
-  }
+// Before the return statement with redirection
+if ((status.includes('Game not found') || status.includes('Failed to join')) && !isAIGame) {
+  return (
+    <Container
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <NavBar />
+      <StatusMessage>
+        {status}
+        <p>Redirecting to home page...</p>
+      </StatusMessage>
+    </Container>
+  );
+}
+
 
   return (
     <Container

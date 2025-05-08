@@ -461,10 +461,24 @@ const flipBoard = useCallback((flipped?: boolean) => {
     }, [socket]);
 
     const resignGame = useCallback(() => {
-        if (socket && isGameActive && !isWaitingForPlayer) {
+        if (isAIGame && isGameActive) {
+            const winner = playerColor === PlayerColor.WHITE ? 'Black' : 'White';
+            const result = `${winner} wins by resignation`;
+            
+            setGameOver(true);
+            setGameResult(result);
+            setGameResultReason('Resignation');
+            setIsGameActive(false);
+            setStatus(result); // Simple status that won't trigger navigation
+        } else if (socket && isGameActive && !isWaitingForPlayer) {
             socket.emit('resign');
         }
-    }, [socket, isGameActive, isWaitingForPlayer]);
+    }, [socket, isGameActive, isWaitingForPlayer, isAIGame, playerColor]);
+    
+    
+    
+    
+    
     
     const cancelGame = useCallback(() => {
         if (socket && isGameActive && isWaitingForPlayer) {
