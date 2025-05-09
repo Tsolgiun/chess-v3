@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FaSun, FaMoon, FaBlog, FaUser, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
+import { FaSun, FaMoon, FaBlog, FaUser, FaChartBar, FaSignOutAlt, FaHome } from 'react-icons/fa';
 import { NavBarProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
 import { media, touchFriendly, zIndex } from '../../styles/responsive';
@@ -116,15 +116,21 @@ const BottomNavigation = styled.div`
   `)}
 `;
 
-const NavItem = styled(Link)`
+interface NavItemProps {
+  isActive?: boolean;
+  theme: { colors: ThemeColors };
+}
+
+const NavItem = styled(Link)<NavItemProps>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme, isActive }) => isActive ? theme.colors.accent : theme.colors.text};
   text-decoration: none;
   padding: 8px 0;
-  width: 25%;
+  width: 20%;
   box-sizing: border-box;
+  position: relative;
   
   svg {
     font-size: 1.5rem;
@@ -133,20 +139,38 @@ const NavItem = styled(Link)`
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
   }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: ${({ isActive }) => isActive ? '24px' : '0'};
+    height: 2px;
+    background: ${({ theme }) => theme.colors.accent};
+    transition: width 0.3s ease;
+  }
 `;
 
-const LogoutNavItem = styled.button`
+interface LogoutNavItemProps {
+  isActive?: boolean;
+  theme: { colors: ThemeColors };
+}
+
+const LogoutNavItem = styled.button<LogoutNavItemProps>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme, isActive }) => isActive ? theme.colors.accent : theme.colors.text};
   text-decoration: none;
   padding: 8px 0;
-  width: 25%;
+  width: 20%;
   background: transparent;
   border: none;
   cursor: pointer;
   box-sizing: border-box;
+  position: relative;
   
   svg {
     font-size: 1.5rem;
@@ -154,6 +178,18 @@ const LogoutNavItem = styled.button`
   
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: ${({ isActive }) => isActive ? '24px' : '0'};
+    height: 2px;
+    background: ${({ theme }) => theme.colors.accent};
+    transition: width 0.3s ease;
   }
 `;
 
@@ -302,6 +338,7 @@ const ThemeToggle = styled.button<ThemeToggleProps>`
 // Remove MobileMenuButton and Overlay as they're no longer needed
 
 const NavBar: React.FC<NavBarProps> = ({ transparent = false }) => {
+  const location = useLocation();
   const { user, logout } = useAuth();
   const themeContext = useTheme();
   const { theme, toggleTheme } = themeContext;
@@ -386,16 +423,19 @@ const NavBar: React.FC<NavBarProps> = ({ transparent = false }) => {
             opacity: 1
           }}
         >
-          <NavItem to="/blog" theme={themeContext}>
+          <NavItem to="/" theme={themeContext} isActive={location.pathname === "/"}>
+            <div>{FaHome({})}</div>
+          </NavItem>
+          <NavItem to="/blog" theme={themeContext} isActive={location.pathname === "/blog"}>
             <div>{FaBlog({})}</div>
           </NavItem>
-          <NavItem to="/profile" theme={themeContext}>
+          <NavItem to="/profile" theme={themeContext} isActive={location.pathname === "/profile"}>
             <div>{FaUser({})}</div>
           </NavItem>
-          <NavItem to="/analysis" theme={themeContext}>
+          <NavItem to="/analysis" theme={themeContext} isActive={location.pathname === "/analysis"}>
             <div>{FaChartBar({})}</div>
           </NavItem>
-          <LogoutNavItem onClick={handleLogout} theme={themeContext}>
+          <LogoutNavItem onClick={handleLogout} theme={themeContext} isActive={location.pathname === "/logout"}>
             <div>{FaSignOutAlt({})}</div>
           </LogoutNavItem>
         </BottomNavigation>
@@ -407,13 +447,16 @@ const NavBar: React.FC<NavBarProps> = ({ transparent = false }) => {
             opacity: 1
           }}
         >
-          <NavItem to="/blog" theme={themeContext}>
+          <NavItem to="/" theme={themeContext} isActive={location.pathname === "/"}>
+            <div>{FaHome({})}</div>
+          </NavItem>
+          <NavItem to="/blog" theme={themeContext} isActive={location.pathname === "/blog"}>
             <div>{FaBlog({})}</div>
           </NavItem>
-          <NavItem to="/login" theme={themeContext}>
+          <NavItem to="/login" theme={themeContext} isActive={location.pathname === "/login"}>
             <div>{FaUser({})}</div>
           </NavItem>
-          <NavItem to="/register" theme={themeContext}>
+          <NavItem to="/register" theme={themeContext} isActive={location.pathname === "/register"}>
             <div>{FaSignOutAlt({})}</div>
           </NavItem>
         </BottomNavigation>

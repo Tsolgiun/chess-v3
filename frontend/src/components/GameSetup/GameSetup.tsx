@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { useGame } from '../../context/GameContext';
 import { ThemeColors } from '../../types';
 import { PlayerColor } from '../../types/enums';
+import { breakpoints, media } from '../../styles/responsive';
 
 const slideUp = keyframes`
   from {
@@ -27,6 +28,19 @@ const Container = styled.div<ContainerProps>`
     animation: ${slideUp} 0.5s ease-out forwards;
     color: ${({ theme }) => theme.colors.text};
     transition: color 0.3s ease;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    
+    @media (max-width: ${breakpoints.md}) {
+        gap: 20px;
+        padding: 15px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 15px;
+        padding: 10px;
+    }
 `;
 
 interface SectionProps {
@@ -45,10 +59,21 @@ const Section = styled.div<SectionProps>`
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease, background-color 0.3s ease, color 0.3s ease;
     border: 1px solid ${({ theme }) => theme.colors.border};
+    width: 100%;
 
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    @media (max-width: ${breakpoints.md}) {
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 12px;
+        padding: 15px;
     }
 `;
 
@@ -104,6 +129,18 @@ const Button = styled.button<ButtonProps>`
         color: ${props.theme.colors.primary};
         border-color: ${props.theme.colors.accent};
     `}
+    
+    @media (max-width: ${breakpoints.md}) {
+        padding: ${props => props.size === 'large' ? '14px 28px' : '10px 20px'};
+        font-size: ${props => props.size === 'large' ? '1.1rem' : '0.95rem'};
+        min-width: 160px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: ${props => props.size === 'large' ? '12px 24px' : '8px 16px'};
+        font-size: ${props => props.size === 'large' ? '1rem' : '0.9rem'};
+        min-width: 140px;
+    }
 `;
 
 interface InputProps {
@@ -131,6 +168,19 @@ const Input = styled.input<InputProps>`
     &::placeholder {
         color: ${({ theme }) => `${theme.colors.text}99`};
     }
+    
+    @media (max-width: ${breakpoints.md}) {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        width: 220px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        width: 100%;
+        max-width: 200px;
+    }
 `;
 
 interface StatusProps {
@@ -147,6 +197,11 @@ const Status = styled.p<StatusProps>`
     text-align: center;
     font-weight: 500;
     line-height: 1.5;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
 `;
 
 interface GameIdProps {
@@ -163,6 +218,17 @@ const GameId = styled.div<GameIdProps>`
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border: 2px solid ${({ theme }) => theme.colors.border};
+    
+    @media (max-width: ${breakpoints.md}) {
+        font-size: 1.5rem;
+        padding: 14px 20px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 1.3rem;
+        padding: 12px 16px;
+        width: 100%;
+    }
 `;
 
 const FormWrapper = styled.form`
@@ -171,6 +237,12 @@ const FormWrapper = styled.form`
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
 `;
 
 interface OrDividerProps {
@@ -193,6 +265,17 @@ const OrDivider = styled.div<OrDividerProps>`
         height: 1px;
         background: ${({ theme }) => theme.colors.border};
     }
+    
+    @media (max-width: ${breakpoints.md}) {
+        margin: 15px 0;
+        gap: 12px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        margin: 12px 0;
+        gap: 10px;
+        font-size: 0.9rem;
+    }
 `;
 
 const ButtonGroup = styled.div`
@@ -200,6 +283,16 @@ const ButtonGroup = styled.div`
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 8px;
+        
+        & > button {
+            flex: 1;
+            min-width: 0;
+        }
+    }
 `;
 
 const DifficultySelector = styled.div`
@@ -209,6 +302,10 @@ const DifficultySelector = styled.div`
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 8px;
+    }
 `;
 
 const DifficultyLabel = styled.div`
@@ -216,11 +313,20 @@ const DifficultyLabel = styled.div`
     font-weight: 500;
     text-align: center;
     margin-bottom: 5px;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 1rem;
+        margin-bottom: 3px;
+    }
 `;
 
 const DifficultySlider = styled.div`
     width: 100%;
     padding: 0 10px;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: 0 5px;
+    }
 `;
 
 interface SliderProps {
@@ -255,6 +361,20 @@ const Slider = styled.input<SliderProps>`
         border: 2px solid ${({ theme }) => theme.colors.primary};
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        height: 6px;
+        
+        &::-webkit-slider-thumb {
+            width: 16px;
+            height: 16px;
+        }
+        
+        &::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+        }
+    }
 `;
 
 const DifficultyMarkers = styled.div`
@@ -265,6 +385,11 @@ const DifficultyMarkers = styled.div`
     font-size: 0.8rem;
     color: ${({ theme }) => theme.colors.text};
     opacity: 0.8;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.7rem;
+        margin-top: 6px;
+    }
 `;
 
 const DifficultyValue = styled.div`
@@ -273,6 +398,11 @@ const DifficultyValue = styled.div`
     color: ${({ theme }) => theme.colors.accent};
     text-align: center;
     margin: 10px 0;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 1.3rem;
+        margin: 8px 0;
+    }
 `;
 
 const DifficultyInfo = styled.div`
@@ -284,6 +414,12 @@ const DifficultyInfo = styled.div`
     background: ${({ theme }) => theme.colors.secondary};
     border-radius: 6px;
     border: 1px solid ${({ theme }) => theme.colors.border};
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        margin: 3px 0 8px;
+    }
 `;
 
 const DifficultyDescription = styled.div`
@@ -294,6 +430,12 @@ const DifficultyDescription = styled.div`
     background: ${({ theme }) => theme.colors.primary}66;
     border-radius: 6px;
     text-align: center;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.8rem;
+        padding: 8px;
+        margin-top: 8px;
+    }
 `;
 
 const OptionGroup = styled.div`
@@ -303,6 +445,15 @@ const OptionGroup = styled.div`
     width: 100%;
     max-width: 500px;
     margin: 10px auto;
+    
+    @media (max-width: ${breakpoints.md}) {
+        gap: 12px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 10px;
+        margin: 8px auto;
+    }
 `;
 
 const OptionLabel = styled.div`
@@ -310,6 +461,11 @@ const OptionLabel = styled.div`
     font-weight: 500;
     text-align: center;
     margin-bottom: 5px;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 1rem;
+        margin-bottom: 3px;
+    }
 `;
 
 const RadioGroup = styled.div`
@@ -317,6 +473,16 @@ const RadioGroup = styled.div`
     gap: 15px;
     justify-content: center;
     flex-wrap: wrap;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        gap: 8px;
+        width: 100%;
+        
+        & > div {
+            flex: 1;
+            min-width: 0;
+        }
+    }
 `;
 
 interface RadioButtonProps {
@@ -344,6 +510,11 @@ const RadioButton = styled.div<RadioButtonProps>`
             `${props.theme.colors.accent}33` : 
             `${props.theme.colors.border}33`};
     }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: 8px 10px;
+        justify-content: center;
+    }
 `;
 
 const RadioInput = styled.input`
@@ -353,6 +524,10 @@ const RadioInput = styled.input`
 const RadioLabel = styled.label`
     font-size: 1rem;
     cursor: pointer;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.9rem;
+    }
 `;
 
 const TabGroup = styled.div`
@@ -362,6 +537,10 @@ const TabGroup = styled.div`
     margin-bottom: 15px;
     width: 100%;
     max-width: 500px;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        margin-bottom: 10px;
+    }
 `;
 
 interface TabProps {
@@ -389,6 +568,15 @@ const Tab = styled.div<TabProps>`
             props.theme.colors.accent : 
             `${props.theme.colors.accent}99`};
     }
+    
+    @media (max-width: ${breakpoints.md}) {
+        padding: 8px 15px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
 `;
 
 const TimeControlGrid = styled.div`
@@ -397,6 +585,15 @@ const TimeControlGrid = styled.div`
     gap: 10px;
     width: 100%;
     max-width: 500px;
+    
+    @media (max-width: ${breakpoints.md}) {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
 `;
 
 interface TimeControlItemProps {
@@ -423,17 +620,39 @@ const TimeControlItem = styled.div<TimeControlItemProps>`
             `${props.theme.colors.border}33`};
         transform: translateY(-2px);
     }
+    
+    @media (max-width: ${breakpoints.md}) {
+        padding: 10px 8px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        padding: 8px 5px;
+    }
 `;
 
 const TimeControlName = styled.div`
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 5px;
+    
+    @media (max-width: ${breakpoints.md}) {
+        font-size: 1rem;
+        margin-bottom: 4px;
+    }
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.9rem;
+        margin-bottom: 3px;
+    }
 `;
 
 const TimeControlDescription = styled.div`
     font-size: 0.8rem;
     opacity: 0.8;
+    
+    @media (max-width: ${breakpoints.sm}) {
+        font-size: 0.7rem;
+    }
 `;
 
 // Define time control options
