@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { useGame } from '../../context/GameContext';
 import { ThemeColors } from '../../types';
 import { PlayerColor } from '../../types/enums';
-import { breakpoints, media } from '../../styles/responsive';
+import { breakpoints } from '../../styles/responsive';
 
 const slideUp = keyframes`
   from {
