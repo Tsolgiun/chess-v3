@@ -51,7 +51,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       
       userPrefsLoaded.current = true;
     }
-  }, [user]); // Removed boardColors dependency to prevent infinite loop
+  }, [user, boardColors.darkSquare, boardColors.lightSquare]); // Adding required dependencies
 
   // Update localStorage when theme changes
   useEffect(() => {
