@@ -69,16 +69,23 @@ const ButtonContainer = styled.div`
 `;
 
 const GoogleButton = styled(Button)`
-  background-color: #4285F4;
-  color: white;
+  background-color: transparent;
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   margin-bottom: 1rem;
+  width: 100%;
   
   &:hover {
-    background-color: #357ae8;
+    background-color: ${({ theme }) => theme.colors.background};
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
   }
 `;
 
