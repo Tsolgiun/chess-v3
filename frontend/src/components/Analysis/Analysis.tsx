@@ -6,7 +6,7 @@ import { ThemeColors } from '../../types/interfaces';
 import { Stockfish17, PositionEvaluation } from '../../lib/engine/stockfish17';
 import analyze from '../../lib/chess/analysis';
 import { Classification } from '../../lib/chess/classification';
-import { EvaluatedPosition, EngineLine, Evaluation, Move, Report, DetectedMotif } from '../../lib/chess/types';
+import { EvaluatedPosition, EngineLine, Evaluation, Report } from '../../lib/chess/types';
 import { getWinPercentageFromEvaluation } from '../../lib/chess/winPercentage';
 import PgnImport from '../PgnImport/PgnImport';
 import DepthControl from '../DepthControl/DepthControl';
@@ -38,13 +38,6 @@ const Container = styled.div<ContainerProps>`
   gap: 20px;
 `;
 
-const Title = styled.h3<ContainerProps>`
-  margin: 0 0 16px 0;
-  font-size: 1.1rem;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 600;
-  transition: color 0.3s ease;
-`;
 
 const EvaluationBar = styled.div<ContainerProps>`
   width: 100%;
@@ -220,96 +213,6 @@ const Button = styled.button<ContainerProps>`
   }
 `;
 
-const AccuracyContainer = styled.div<ContainerProps>`
-  display: flex;
-  justify-content: space-between;
-  margin: 16px 0;
-  padding: 12px;
-  background: ${({ theme }) => theme.colors.primary};
-  border-radius: 8px;
-`;
-
-const AccuracyItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-`;
-
-const AccuracyLabel = styled.span<ContainerProps>`
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 0.9rem;
-`;
-
-const AccuracyValue = styled.span<ContainerProps>`
-  color: ${({ theme }) => theme.colors.accent};
-  font-size: 1.2rem;
-  font-weight: 600;
-`;
-
-const TacticalMotifContainer = styled.div<ContainerProps>`
-  margin-top: 16px;
-  padding: 12px;
-  background: ${({ theme }) => theme.colors.primary};
-  border-radius: 8px;
-`;
-
-const TacticalMotifTitle = styled.div<ContainerProps>`
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const TacticalMotifItem = styled.div<ContainerProps>`
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  margin-bottom: 4px;
-  background: ${({ theme }) => theme.colors.secondary};
-  border-radius: 4px;
-  gap: 8px;
-`;
-
-const TacticalMotifType = styled.span<ContainerProps>`
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.accent};
-`;
-
-const TacticalMotifDescription = styled.span<ContainerProps>`
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const TabContainer = styled.div<ContainerProps>`
-  display: flex;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: 16px;
-`;
-
-interface TabProps {
-  active?: boolean;
-  theme: { colors: ThemeColors };
-}
-
-const Tab = styled.div<TabProps>`
-  padding: 8px 16px;
-  cursor: pointer;
-  font-weight: ${props => props.active ? '600' : '400'};
-  color: ${props => props.active ? ({ theme }) => theme.colors.accent : ({ theme }) => theme.colors.text};
-  border-bottom: 2px solid ${props => props.active ? ({ theme }) => theme.colors.accent : 'transparent'};
-  transition: all 0.2s ease;
-  
-  &:hover {
-    color: ${({ theme }) => theme.colors.accent};
-  }
-`;
-
-interface TabContentProps {
-  active?: boolean;
-}
-
-const TabContent = styled.div<TabContentProps>`
-  display: ${props => props.active ? 'block' : 'none'};
-`;
 
 // Debounce utility function
 const useDebounce = <T extends (...args: any[]) => any>(callback: T, delay: number) => {
@@ -334,30 +237,6 @@ const useDebounce = <T extends (...args: any[]) => any>(callback: T, delay: numb
   }, [callback, delay]);
 };
 
-const CheckboxContainer = styled.div<ContainerProps>`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 12px 0;
-  padding: 8px 12px;
-  background: ${({ theme }) => theme.colors.primary};
-  border-radius: 6px;
-`;
-
-const CheckboxLabel = styled.label<ContainerProps>`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 0.9rem;
-  cursor: pointer;
-`;
-
-const Checkbox = styled.input`
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-`;
 
 const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveIndex, onPositionChange, onEvaluationChange, onMoveClassificationsChange }) => {
   const theme = useTheme();
@@ -797,7 +676,15 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         onMoveClassificationsChange({});
       }
     }
-  }, [currentMoveIndex, positions, onMoveClassificationsChange, getMoveClassifications, getCurrentClassification]);
+  }, [
+    currentMoveIndex, 
+    positions, 
+    onMoveClassificationsChange, 
+    getMoveClassifications, 
+    getCurrentClassification,
+    setCurrentClassification,
+    setMoveClassifications
+  ]);
 
   return (
     <Container theme={theme}>

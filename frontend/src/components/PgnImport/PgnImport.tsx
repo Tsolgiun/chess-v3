@@ -576,7 +576,7 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
     if (username && (activeTab === 'chesscom' || activeTab === 'lichess')) {
       fetchGames();
     }
-  }, [currentYear, currentMonth]);
+  }, [currentYear, currentMonth, username, activeTab, fetchGames]);
 
   return (
     <Container theme={theme}>

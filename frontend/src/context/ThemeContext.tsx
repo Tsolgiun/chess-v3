@@ -46,7 +46,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         darkSquare
       }));
     }
-  }, [user]);
+  }, [user, boardColors]);
 
   // Update localStorage when theme changes
   useEffect(() => {

@@ -305,7 +305,7 @@ const Review: React.FC = () => {
         };
         
         loadGameData();
-    }, [urlGameId, contextGameId, reviewFen]);
+    }, [urlGameId, contextGameId, reviewFen, reviewMoves]);
 
     // Navigate to a specific move
     const goToMove = (moveIndex: number): void => {

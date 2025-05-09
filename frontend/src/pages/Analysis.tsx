@@ -281,7 +281,7 @@ const AnalysisPage: React.FC = () => {
         console.error("Error parsing PGN:", error);
       }
     }
-  }, []); // Empty dependency array - only run once on mount
+  }, [location]); // Add location as a dependency
   
   // For manual PGN imports, we'll still need this
   const [initialPgn, setInitialPgn] = useState<string>('');
@@ -353,7 +353,7 @@ const AnalysisPage: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [currentMoveIndex, moveHistory]);
+    }, [currentMoveIndex, moveHistory, goToPrevious, goToNext, goToStart, goToEnd]);
 
     // Animation variants
     const containerVariants = {

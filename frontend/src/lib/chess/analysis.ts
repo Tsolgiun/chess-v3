@@ -50,8 +50,8 @@ function processPositions(positions: EvaluatedPosition[]): void {
         let board = new Chess(position.fen);
         let lastPosition = positions[positionIndex - 1];
 
-        let topMove = lastPosition.topLines.find(line => line.id == 1);
-        let secondTopMove = lastPosition.topLines.find(line => line.id == 2);
+        let topMove = lastPosition.topLines.find(line => line.id === 1);
+        let secondTopMove = lastPosition.topLines.find(line => line.id === 2);
         
         // Debug logging for topLines
         console.log(`Position ${positionIndex} topLines:`, lastPosition.topLines);
@@ -60,7 +60,7 @@ function processPositions(positions: EvaluatedPosition[]): void {
         if (!topMove) continue;
 
         let previousEvaluation = topMove.evaluation;
-        let evaluation = position.topLines.find(line => line.id == 1)?.evaluation;
+        let evaluation = position.topLines.find(line => line.id === 1)?.evaluation;
         if (!previousEvaluation) continue;
 
         let moveColour = position.fen.includes(" b ") ? "white" : "black";
@@ -110,9 +110,9 @@ function calculateEvaluationLoss(
     let cutoffEvalLoss = Infinity;
     let lastLineEvalLoss = Infinity;
 
-    let matchingTopLine = lastPosition.topLines.find(line => line.moveUCI == position.move.uci);
+    let matchingTopLine = lastPosition.topLines.find(line => line.moveUCI === position.move.uci);
     if (matchingTopLine) {
-        if (moveColour == "white") {
+        if (moveColour === "white") {
             lastLineEvalLoss = previousEvaluation.value - matchingTopLine.evaluation.value;
         } else {
             lastLineEvalLoss = matchingTopLine.evaluation.value - previousEvaluation.value;
@@ -120,14 +120,14 @@ function calculateEvaluationLoss(
     }
 
     if (lastPosition.cutoffEvaluation) {
-        if (moveColour == "white") {
+        if (moveColour === "white") {
             cutoffEvalLoss = lastPosition.cutoffEvaluation.value - evaluation.value;
         } else {
             cutoffEvalLoss = evaluation.value - lastPosition.cutoffEvaluation.value;
         }   
     }
 
-    if (moveColour == "white") {
+    if (moveColour === "white") {
         evalLoss = previousEvaluation.value - evaluation.value;
     } else {
         evalLoss = evaluation.value - previousEvaluation.value;
@@ -157,14 +157,14 @@ function classifyMove(
     evaluation: any, 
     evalLoss: number
 ): void {
-    let absoluteEvaluation = evaluation.value * (moveColour == "white" ? 1 : -1);
-    let previousAbsoluteEvaluation = previousEvaluation.value * (moveColour == "white" ? 1 : -1);
-    let absoluteSecondEvaluation = (secondTopMove?.evaluation.value ?? 0) * (moveColour == "white" ? 1 : -1);
+    let absoluteEvaluation = evaluation.value * (moveColour === "white" ? 1 : -1);
+    let previousAbsoluteEvaluation = previousEvaluation.value * (moveColour === "white" ? 1 : -1);
+    let absoluteSecondEvaluation = (secondTopMove?.evaluation.value ?? 0) * (moveColour === "white" ? 1 : -1);
     
-    let noMate = previousEvaluation.type == "cp" && evaluation.type == "cp";
+    let noMate = previousEvaluation.type === "cp" && evaluation.type === "cp";
 
     // If it is the top line, disregard other detections and give best
-    if (topMove.moveUCI == position.move.uci) {
+    if (topMove.moveUCI === position.move.uci) {
         position.classification = Classification.BEST;
     } else {
         // If no mate on the board last move and still no mate
@@ -182,12 +182,12 @@ function classifyMove(
     }
 
     // Check for brilliant move
-    if (position.classification == Classification.BEST) {
+    if (position.classification === Classification.BEST) {
         checkForBrilliantMove(position, lastPosition, absoluteEvaluation, absoluteSecondEvaluation, topMove, moveColour);
     }
 
     // Check for great move
-    if (position.classification == Classification.BEST) {
+    if (position.classification === Classification.BEST) {
         checkForGreatMove(position, lastPosition, noMate, topMove, secondTopMove);
     }
 
@@ -211,7 +211,7 @@ function handleMateScores(
     previousAbsoluteEvaluation: number
 ): void {
     // If no mate last move but you blundered a mate
-    if (previousEvaluation.type == "cp" && evaluation.type == "mate") {
+    if (previousEvaluation.type === "cp" && evaluation.type === "mate") {
         if (absoluteEvaluation > 0) {
             position.classification = Classification.BEST;
         } else if (absoluteEvaluation >= -2) {
@@ -224,7 +224,7 @@ function handleMateScores(
     }
 
     // If mate last move and there is no longer a mate
-    else if (previousEvaluation.type == "mate" && evaluation.type == "cp") {
+    else if (previousEvaluation.type === "mate" && evaluation.type === "cp") {
         if (previousAbsoluteEvaluation < 0 && absoluteEvaluation < 0) {
             position.classification = Classification.BEST;
         } else if (absoluteEvaluation >= 400) {
@@ -239,7 +239,7 @@ function handleMateScores(
     }
 
     // If mate last move and forced mate still exists
-    else if (previousEvaluation.type == "mate" && evaluation.type == "mate") {
+    else if (previousEvaluation.type === "mate" && evaluation.type === "mate") {
         if (previousAbsoluteEvaluation > 0) {
             if (absoluteEvaluation <= -4) {
                 position.classification = Classification.MISTAKE;
@@ -253,7 +253,7 @@ function handleMateScores(
                 position.classification = Classification.GOOD;
             }
         } else {
-            if (absoluteEvaluation == previousAbsoluteEvaluation) {
+            if (absoluteEvaluation === previousAbsoluteEvaluation) {
                 position.classification = Classification.BEST;
             } else {
                 position.classification = Classification.GOOD;
@@ -282,8 +282,8 @@ function checkForBrilliantMove(
     // Test for brilliant move classification
     // Must be winning for the side that played the brilliancy
     let winningAnyways = (
-        absoluteSecondEvaluation >= 700 && topMove.evaluation.type == "cp"
-        || (topMove.evaluation.type == "mate" && topMove.evaluation.type == "mate")
+        (absoluteSecondEvaluation >= 700 && topMove.evaluation.type === "cp")
+        || (topMove.evaluation.type === "mate" && topMove.evaluation.type === "mate")
     );
 
     if (absoluteEvaluation >= 0 && !winningAnyways && !position.move.san.includes("=")) {
@@ -297,8 +297,8 @@ function checkForBrilliantMove(
         for (let row of currentBoard.board()) {
             for (let piece of row) {
                 if (!piece) continue;
-                if (piece.color != moveColour.charAt(0)) continue;
-                if (piece.type == "k" || piece.type == "p") continue;
+                if (piece.color !== moveColour.charAt(0)) continue;
+                if (piece.type === "k" || piece.type === "p") continue;
 
                 // If the piece just captured is of higher or equal value than the candidate
                 // hanging piece, not hanging, better trade happening somewhere else
@@ -337,8 +337,8 @@ function checkForBrilliantMove(
                         for (let row of captureTestBoard.board()) {
                             for (let enemyPiece of row) {
                                 if (!enemyPiece) continue;
-                                if (enemyPiece.color == captureTestBoard.turn()) continue;
-                                if (enemyPiece.type == "k" || enemyPiece.type == "p") continue;
+                                if (enemyPiece.color === captureTestBoard.turn()) continue;
+                                if (enemyPiece.type === "k" || enemyPiece.type === "p") continue;
         
                                 if (
                                     isPieceHanging(position.fen, captureTestBoard.fen(), enemyPiece.square)
@@ -401,8 +401,8 @@ function checkForGreatMove(
     try {
         if (
             noMate
-            && position.classification != Classification.BRILLIANT
-            && lastPosition.classification == Classification.BLUNDER
+            && position.classification !== Classification.BRILLIANT
+            && lastPosition.classification === Classification.BLUNDER
             && Math.abs(topMove.evaluation.value - secondTopMove.evaluation.value) >= 150
             && !isPieceHanging(lastPosition.fen, position.fen, position.move.uci.slice(2, 4) as Square)
         ) {
@@ -427,16 +427,16 @@ function applyPostClassificationAdjustments(
     evaluation: any
 ): void {
     // Do not allow blunder if move still completely winning
-    if (position.classification == Classification.BLUNDER && absoluteEvaluation >= 600) {
+    if (position.classification === Classification.BLUNDER && absoluteEvaluation >= 600) {
         position.classification = Classification.GOOD;
     }
 
     // Do not allow blunder if you were already in a completely lost position
     if (
-        position.classification == Classification.BLUNDER 
+        position.classification === Classification.BLUNDER 
         && previousAbsoluteEvaluation <= -600
-        && previousEvaluation.type == "cp"
-        && evaluation.type == "cp"
+        && previousEvaluation.type === "cp"
+        && evaluation.type === "cp"
     ) {
         position.classification = Classification.GOOD;
     }
@@ -451,7 +451,7 @@ function applyPostClassificationAdjustments(
 function generateSANMoves(positions: EvaluatedPosition[]): void {
     for (let position of positions) {
         for (let line of position.topLines) {
-            if (line.evaluation.type == "mate" && line.evaluation.value == 0) continue;
+            if (line.evaluation.type === "mate" && line.evaluation.value === 0) continue;
 
             let board = new Chess(position.fen);
 
@@ -477,7 +477,7 @@ function applyBookMoves(positions: EvaluatedPosition[]): void {
     let positiveClassifs = Object.keys(classificationValues).slice(4, 8);
     for (let position of positions.slice(1)) {
         if (
-            (position.worker == "cloud" && positiveClassifs.includes(position.classification!))
+            (position.worker === "cloud" && positiveClassifs.includes(position.classification!))
             || position.opening
         ) {
             position.classification = Classification.BOOK;

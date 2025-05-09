@@ -44,7 +44,7 @@ export function getAttackers(fen: string, square: Square): InfluencingPiece[] {
 
     // Set colour to move to opposite of attacked piece
     board.load(fen
-        .replace(/(?<= )(?:w|b)(?= )/g, piece.color == "w" ? "b" : "w")
+        .replace(/(?<= )(?:w|b)(?= )/g, piece.color === "w" ? "b" : "w")
         .replace(/ [a-h][1-8] /g, " - ")
     );
 
@@ -52,7 +52,7 @@ export function getAttackers(fen: string, square: Square): InfluencingPiece[] {
     let legalMoves = board.moves({ verbose: true });
 
     for (let move of legalMoves) {
-        if (move.to == square) {
+        if (move.to === square) {
             attackers.push({
                 square: move.from,
                 color: move.color,
@@ -64,12 +64,12 @@ export function getAttackers(fen: string, square: Square): InfluencingPiece[] {
     // If there is an opposite king around the attacked piece add him as an attacker
     // if he is not the only attacker or it is a legal move for the king to capture it
     let oppositeKing: InfluencingPiece | undefined;
-    let oppositeColour = piece.color == "w" ? "b" : "w";
+    let oppositeColour = piece.color === "w" ? "b" : "w";
 
     let pieceCoordinate = getBoardCoordinates(square);
     for (let xOffset = -1; xOffset <= 1; xOffset++) {
         for (let yOffset = -1; yOffset <= 1; yOffset++) {
-            if (xOffset == 0 && yOffset == 0) continue;
+            if (xOffset === 0 && yOffset === 0) continue;
 
             let offsetSquare = getSquare({
                 x: Math.min(Math.max(pieceCoordinate.x + xOffset, 0), 7),
@@ -78,7 +78,7 @@ export function getAttackers(fen: string, square: Square): InfluencingPiece[] {
             let offsetPiece = board.get(offsetSquare);
             if (!offsetPiece) continue;
 
-            if (offsetPiece.color == oppositeColour && offsetPiece.type == "k") {
+            if (offsetPiece.color === oppositeColour && offsetPiece.type === "k") {
                 oppositeKing = {
                     color: offsetPiece.color,
                     square: offsetSquare,
@@ -146,7 +146,7 @@ export function getDefenders(fen: string, square: Square) {
 
         // Replace defended piece with an enemy queen
         board.put({
-            color: piece.color == "w" ? "b" : "w",
+            color: piece.color === "w" ? "b" : "w",
             type: "q"
         }, square);
 
@@ -170,17 +170,17 @@ export function isPieceHanging(lastFen: string, fen: string, square: Square) {
     let defenders = getDefenders(fen, square);
 
     // If piece was just traded equally or better, not hanging
-    if (pieceValues[lastPiece.type] >= pieceValues[piece.type] && lastPiece.color != piece.color) {
+    if (pieceValues[lastPiece.type] >= pieceValues[piece.type] && lastPiece.color !== piece.color) {
         return false;
     }
 
     // If a rook took a minor piece that was only defended by one other
     // minor piece, it was a favourable rook exchange, so rook not hanging
     if (
-        piece.type == "r"
-        && pieceValues[lastPiece.type] == 3 
-        && attackers.every(atk => pieceValues[atk.type] == 3)
-        && attackers.length == 1
+        piece.type === "r"
+        && pieceValues[lastPiece.type] === 3 
+        && attackers.every(atk => pieceValues[atk.type] === 3)
+        && attackers.length === 1
     ) {
         return false;
     }
@@ -211,7 +211,7 @@ export function isPieceHanging(lastFen: string, fen: string, square: Square) {
         // If any of the piece's defenders are pawns, then the sacrificed piece
         // is the defending pawn. The least valuable attacker is equal in value
         // to the sacrificed piece at this point of the logic
-        if (defenders.some(dfn => pieceValues[dfn.type] == 1)) {
+        if (defenders.some(dfn => pieceValues[dfn.type] === 1)) {
             return false;
         }
 
