@@ -2,6 +2,11 @@
 
 // Allowed origins for CORS
 const allowedOrigins = [
+    // Production domains
+    'https://chessmn.netlify.app',   // Frontend on Netlify
+    'https://chessmn-backend.onrender.com', // Backend on Render
+
+    // Development origins
     'http://localhost:3000',         // Web app local
     'http://100.65.144.222:3000',    // Web app from other devices
     'http://100.65.144.222:3001',    // For mobile devices

@@ -229,7 +229,7 @@ const flipBoard = useCallback((flipped?: boolean) => {
 
     // Socket initialization and event handlers
     useEffect(() => {
-        const newSocket = io('http://localhost:3001', {
+        const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3001', {
             transports: ['websocket', 'polling'],
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
