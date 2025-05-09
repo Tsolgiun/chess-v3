@@ -295,7 +295,9 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
       const moves = chess.history();
       
       // Get the initial position if it's not the standard starting position
-      const initialFen = chess.header().FEN || chess.header().SetUp === '1' ? chess.header().FEN : undefined;
+      // Ensure initialFen is either a string or undefined, never null
+      const headerFen = chess.header().FEN;
+      const initialFen = headerFen && (chess.header().SetUp === '1' || headerFen !== '') ? headerFen : undefined;
       
       // Call the onImport callback with the moves
       onImport(moves, initialFen);
@@ -521,7 +523,9 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
       const moves = chess.history();
       
       // Get the initial position if it's not the standard starting position
-      const initialFen = chess.header().FEN || chess.header().SetUp === '1' ? chess.header().FEN : undefined;
+      // Ensure initialFen is either a string or undefined, never null
+      const headerFen = chess.header().FEN;
+      const initialFen = headerFen && (chess.header().SetUp === '1' || headerFen !== '') ? headerFen : undefined;
       
       // Call the onImport callback with the moves
       onImport(moves, initialFen);
