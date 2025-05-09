@@ -14,6 +14,17 @@ import { ThemeColors } from '../types';
 
 const PageContainer = styled.div`
     padding-top: 80px;
+    width: 100%;
+    box-sizing: border-box;
+    
+    @media (max-width: 768px) {
+        padding-bottom: 70px; /* Add padding for the bottom navigation bar */
+        padding-top: 70px; /* Reduce top padding on smaller screens */
+    }
+    
+    @media (max-width: 576px) {
+        padding-top: 60px; /* Further reduce top padding on mobile */
+    }
 `;
 
 const Container = styled(motion.div)`
@@ -24,10 +35,29 @@ const Container = styled(motion.div)`
     grid-template-columns: minmax(auto, 700px) minmax(300px, 1fr);
     gap: 40px;
     align-items: start;
+    box-sizing: border-box;
+    width: 100%;
 
     @media (max-width: 1200px) {
         grid-template-columns: 1fr;
         max-width: 800px;
+        padding-left: 20px;
+        padding-right: 20px;
+        margin: 16px auto;
+    }
+
+    @media (max-width: 768px) {
+        padding-left: 16px;
+        padding-right: 16px;
+        gap: 30px;
+        margin: 14px auto;
+    }
+
+    @media (max-width: 576px) {
+        padding-left: 12px;
+        padding-right: 12px;
+        gap: 20px;
+        margin: 10px auto;
     }
 `;
 
@@ -43,6 +73,14 @@ const BoardWrapper = styled(motion.div)<BoardWrapperProps>`
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     padding: 30px;
     transition: background-color 0.3s ease, color 0.3s ease;
+    
+    @media (max-width: 768px) {
+        padding: 20px;
+    }
+    
+    @media (max-width: 576px) {
+        padding: 15px;
+    }
 `;
 
 interface ControlsWrapperProps {
@@ -59,6 +97,14 @@ const ControlsWrapper = styled(motion.div)<ControlsWrapperProps>`
     display: flex;
     flex-direction: column;
     height: 100%;
+    
+    @media (max-width: 768px) {
+        padding: 20px;
+    }
+    
+    @media (max-width: 576px) {
+        padding: 15px;
+    }
 `;
 
 interface ButtonProps {
@@ -86,12 +132,28 @@ const Button = styled.button<ButtonProps>`
     &:active {
         transform: translateY(0);
     }
+    
+    @media (max-width: 768px) {
+        padding: 8px 16px;
+    }
+    
+    @media (max-width: 576px) {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        margin: 3px;
+    }
 `;
 
 const ButtonGroup = styled.div`
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    
+    @media (max-width: 576px) {
+        gap: 8px;
+        margin-bottom: 15px;
+    }
 `;
 
 interface TitleProps {
@@ -104,6 +166,16 @@ const Title = styled.h2<TitleProps>`
     color: ${({ theme }) => theme.colors.text};
     font-size: 1.5rem;
     font-weight: 600;
+    
+    @media (max-width: 768px) {
+        font-size: 1.3rem;
+        margin-bottom: 16px;
+    }
+    
+    @media (max-width: 576px) {
+        font-size: 1.2rem;
+        margin-bottom: 14px;
+    }
 `;
 
 interface TabContainerProps {
@@ -115,6 +187,8 @@ const TabContainer = styled.div<TabContainerProps>`
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
     background: ${({ theme }) => theme.colors.secondary};
     margin-bottom: 20px;
+    width: 100%;
+    overflow-x: auto;
 `;
 
 interface TabProps {
@@ -129,9 +203,15 @@ const Tab = styled.div<TabProps>`
     color: ${props => props.active ? ({ theme }) => theme.colors.accent : ({ theme }) => theme.colors.text};
     border-bottom: 2px solid ${props => props.active ? ({ theme }) => theme.colors.accent : 'transparent'};
     transition: all 0.2s ease;
+    white-space: nowrap;
     
     &:hover {
         color: ${({ theme }) => theme.colors.accent};
+    }
+    
+    @media (max-width: 576px) {
+        padding: 10px 16px;
+        font-size: 0.9rem;
     }
 `;
 
@@ -143,6 +223,15 @@ const TabContent = styled.div<TabContentProps>`
     display: ${props => props.active ? 'block' : 'none'};
     flex: 1;
     overflow-y: auto;
+    max-height: 70vh;
+    
+    @media (max-width: 768px) {
+        max-height: 60vh;
+    }
+    
+    @media (max-width: 576px) {
+        max-height: 50vh;
+    }
 `;
 
 interface LocationState {

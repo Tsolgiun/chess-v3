@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useGame } from '../../context/GameContext';
 import { MoveHistoryProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
+import { media, spacing } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {
@@ -32,9 +33,26 @@ const Container = styled.div<ContainerProps>`
     transition: background-color 0.3s ease, color 0.3s ease;
     position: relative;
 
+    ${media.md(`
+        height: 300px;
+        padding: 14px;
+        border-radius: 10px;
+    `)}
+    
+    ${media.sm(`
+        height: 250px;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    `)}
+
     /* Scrollbar styling */
     &::-webkit-scrollbar {
         width: 8px;
+        
+        ${media.sm(`
+            width: 6px;
+        `)}
     }
     
     &::-webkit-scrollbar-track {
@@ -62,6 +80,14 @@ const Header = styled.div`
     background: ${({ theme }) => theme.colors.secondary};
     padding: 4px 0;
     z-index: 10;
+    
+    ${media.md(`
+        margin-bottom: 14px;
+    `)}
+    
+    ${media.sm(`
+        margin-bottom: 12px;
+    `)}
 `;
 
 interface TitleProps {
@@ -74,11 +100,23 @@ const Title = styled.h3<TitleProps>`
     color: ${({ theme }) => theme.colors.text};
     font-weight: 600;
     transition: color 0.3s ease;
+    
+    ${media.md(`
+        font-size: 1rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.9rem;
+    `)}
 `;
 
 const Controls = styled.div`
     display: flex;
     gap: 8px;
+    
+    ${media.sm(`
+        gap: 6px;
+    `)}
 `;
 
 interface ControlButtonProps {
@@ -98,6 +136,12 @@ const ControlButton = styled.button<ControlButtonProps>`
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    
+    ${media.sm(`
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    `)}
     
     &:hover {
         background: ${({ theme }) => theme.colors.accent};
@@ -121,6 +165,14 @@ const MoveTable = styled.div`
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.95rem;
+    
+    ${media.md(`
+        font-size: 0.9rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.85rem;
+    `)}
 `;
 
 interface MoveRowProps {
@@ -149,6 +201,14 @@ const MoveCell = styled.div<MoveCellProps>`
     padding: 10px 6px;
     vertical-align: middle;
     border-bottom: 1px solid ${({ theme }) => `${theme.colors.border}33`};
+    
+    ${media.md(`
+        padding: 8px 5px;
+    `)}
+    
+    ${media.sm(`
+        padding: 6px 4px;
+    `)}
 `;
 
 interface MoveNumberProps {
@@ -161,6 +221,14 @@ const MoveNumber = styled(MoveCell)<MoveNumberProps>`
     width: 40px;
     text-align: center;
     transition: color 0.3s ease;
+    
+    ${media.md(`
+        width: 35px;
+    `)}
+    
+    ${media.sm(`
+        width: 30px;
+    `)}
 `;
 
 interface MoveProps {
@@ -205,6 +273,17 @@ const MoveAnnotationBadge = styled.img`
     width: 14px;
     height: 14px;
     margin-right: 2px;
+    
+    ${media.md(`
+        width: 12px;
+        height: 12px;
+    `)}
+    
+    ${media.sm(`
+        width: 10px;
+        height: 10px;
+        margin-right: 1px;
+    `)}
 `;
 
 const MoveAnnotationText = styled.span<MoveAnnotationProps>`
@@ -218,6 +297,14 @@ const MoveAnnotationText = styled.span<MoveAnnotationProps>`
         return props.theme.colors.accent;
     }};
     font-weight: 600;
+    
+    ${media.md(`
+        font-size: 0.8rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.75rem;
+    `)}
 `;
 
 interface NoMovesMessageProps {
@@ -229,6 +316,16 @@ const NoMovesMessage = styled.div<NoMovesMessageProps>`
     padding: 30px 0;
     color: ${({ theme }) => theme.colors.text}99;
     font-style: italic;
+    
+    ${media.md(`
+        padding: 25px 0;
+        font-size: 0.9rem;
+    `)}
+    
+    ${media.sm(`
+        padding: 20px 0;
+        font-size: 0.85rem;
+    `)}
 `;
 
 interface MoveWithAnnotation {

@@ -14,6 +14,10 @@ import { ThemeColors } from '../types';
 
 const PageContainer = styled.div`
     padding-top: 80px;
+    
+    @media (max-width: 768px) {
+        padding-bottom: 70px; /* Add padding for the bottom navigation bar */
+    }
 `;
 
 const Container = styled(motion.div)`

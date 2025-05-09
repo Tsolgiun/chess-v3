@@ -13,6 +13,10 @@ const Container = styled.div`
   max-width: 800px;
   margin: 120px auto;
   padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 90px; /* Add padding for the bottom navigation bar */
+  }
 `;
 
 interface ProfileCardProps {
@@ -189,8 +193,6 @@ const Profile: React.FC = () => {
             <Username>{user.username}</Username>
             <UserMeta>
               Member since {formatDate(user.createdAt)}
-              <br />
-              Rating: {user.rating}
             </UserMeta>
           </UserInfo>
           <Button 
@@ -202,21 +204,6 @@ const Profile: React.FC = () => {
           </Button>
         </Header>
 
-        <Stats>
-          <StatCard color="#2ecc71">
-            <StatValue>{user.wins || 0}</StatValue>
-            <StatLabel>Wins</StatLabel>
-          </StatCard>
-          <StatCard color="#e74c3c">
-            <StatValue>{user.losses || 0}</StatValue>
-            <StatLabel>Losses</StatLabel>
-          </StatCard>
-          <StatCard color="#f39c12">
-            <StatValue>{user.draws || 0}</StatValue>
-            <StatLabel>Draws</StatLabel>
-          </StatCard>
-        </Stats>
-        
         <BoardColorSelector />
       </ProfileCard>
       </Container>

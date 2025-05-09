@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { GameResultModalProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
+import { media, spacing } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {
@@ -59,6 +60,17 @@ const ModalContainer = styled.div<ModalContainerProps>`
   animation: ${slideIn} 0.3s ease-out;
   z-index: 1001;
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  ${media.md(`
+    padding: 25px;
+    min-width: 280px;
+  `)}
+  
+  ${media.sm(`
+    padding: 20px;
+    min-width: 260px;
+    border-radius: 10px;
+  `)}
 `;
 
 interface ResultTextProps {
@@ -70,6 +82,16 @@ const ResultText = styled.h2<ResultTextProps>`
   margin-bottom: 20px;
   font-size: 1.5rem;
   transition: color 0.3s ease;
+  
+  ${media.md(`
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+  `)}
+  
+  ${media.sm(`
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  `)}
 `;
 
 interface ButtonProps {
@@ -88,6 +110,17 @@ const Button = styled.button<ButtonProps>`
   font-size: 1rem;
   transition: all 0.3s ease, background-color 0.3s ease, color 0.3s ease;
   
+  ${media.md(`
+    padding: 9px 18px;
+    font-size: 0.95rem;
+  `)}
+  
+  ${media.sm(`
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+  `)}
+  
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -105,6 +138,16 @@ const ButtonGroup = styled.div`
   gap: 10px;
   justify-content: center;
   margin-top: 20px;
+  
+  ${media.md(`
+    gap: 8px;
+    margin-top: 18px;
+  `)}
+  
+  ${media.sm(`
+    gap: 6px;
+    margin-top: 16px;
+  `)}
 `;
 
 const GameResultModal: React.FC<GameResultModalProps> = ({ show, result, onNewGame, onReview }) => {

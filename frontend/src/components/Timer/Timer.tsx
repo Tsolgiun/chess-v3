@@ -3,6 +3,7 @@ import styled, { keyframes, css } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { TimerProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
+import { media, spacing } from '../../styles/responsive';
 
 const pulse = keyframes`
   0% {
@@ -41,6 +42,20 @@ const TimerContainer = styled.div<TimerContainerProps>`
     background: ${({ theme }) => theme.colors.secondary};
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    
+    ${media.md(`
+        gap: 10px;
+        margin-bottom: 16px;
+        padding: 12px;
+        border-radius: 10px;
+    `)}
+    
+    ${media.sm(`
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 10px;
+        border-radius: 8px;
+    `)}
 `;
 
 interface PlayerTimerProps {
@@ -77,6 +92,16 @@ const PlayerTimer = styled.div<PlayerTimerProps>`
         height: 100%;
         background: ${props => props.isActive ? ({ theme }) => theme.colors.accent : 'transparent'};
     }
+    
+    ${media.md(`
+        padding: 10px 14px;
+        border-radius: 8px;
+    `)}
+    
+    ${media.sm(`
+        padding: 8px 12px;
+        border-radius: 6px;
+    `)}
 `;
 
 const TimerHeader = styled.div`
@@ -84,12 +109,24 @@ const TimerHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    
+    ${media.sm(`
+        margin-bottom: 6px;
+    `)}
 `;
 
 const PlayerInfo = styled.div`
     display: flex;
     align-items: center;
     gap: 12px;
+    
+    ${media.md(`
+        gap: 10px;
+    `)}
+    
+    ${media.sm(`
+        gap: 8px;
+    `)}
 `;
 
 interface AvatarProps {
@@ -114,6 +151,18 @@ const Avatar = styled.div<AvatarProps>`
     ${props => props.isActive && css`
         animation: ${tickAnimation} 1s infinite;
     `}
+    
+    ${media.md(`
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    `)}
+    
+    ${media.sm(`
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+    `)}
 `;
 
 interface PlayerNameProps {
@@ -125,6 +174,14 @@ const PlayerName = styled.span<PlayerNameProps>`
     font-weight: ${props => props.isActive ? '600' : '500'};
     color: ${({ theme }) => theme.colors.text};
     transition: all 0.3s ease;
+    
+    ${media.md(`
+        font-size: 0.95rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.9rem;
+    `)}
 `;
 
 interface TimeProps {
@@ -142,6 +199,16 @@ const Time = styled.span<TimeProps>`
     }};
     transition: color 0.3s ease;
     letter-spacing: 0.5px;
+    
+    ${media.md(`
+        font-size: 1.2rem;
+        letter-spacing: 0.4px;
+    `)}
+    
+    ${media.sm(`
+        font-size: 1.1rem;
+        letter-spacing: 0.3px;
+    `)}
 `;
 
 // Commented out progress bar component

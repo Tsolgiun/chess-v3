@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaSun, FaMoon, FaBars, FaTimes, FaBlog, FaUser, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
 import { NavBarProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
+import { media, touchFriendly, zIndex } from '../../styles/responsive';
 
 // Create wrapper components for the icons
 const SunIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
@@ -14,24 +15,32 @@ const SunIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
 const MoonIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
   <div {...props}>{FaMoon({})}</div>
 );
+const MenuIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
+  <div {...props}>{FaBars({})}</div>
+);
+const CloseIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
+  <div {...props}>{FaTimes({})}</div>
+);
 
 interface NavProps {
   theme: { colors: ThemeColors };
+  transparent?: boolean;
 }
 
 const Nav = styled.nav<NavProps>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.primary};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
+  height: 70px;
+  background: ${({ theme, transparent }) => transparent ? 'transparent' : theme.colors.primary};
+  box-shadow: ${({ transparent }) => transparent ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)'};
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
-  transition: background-color 0.3s ease;
+  z-index: ${zIndex.navbar};
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 `;
 
 interface LogoProps {
@@ -44,10 +53,16 @@ const Logo = styled(Link)<LogoProps>`
   align-items: center;
   text-decoration: none;
   transition: opacity 0.2s ease;
+  height: 70px;
+  padding: 10px 0;
 
   img {
     height: 50px;
     margin-right: 10px;
+    
+    ${media.sm(`
+      height: 40px;
+    `)}
   }
 
   span {
@@ -55,6 +70,10 @@ const Logo = styled(Link)<LogoProps>`
     font-size: 1.8rem;
     color: ${({ isDarkMode }) => isDarkMode ? 'white' : 'black'};
     font-weight: 600;
+    
+    ${media.sm(`
+      font-size: 1.5rem;
+    `)}
   }
 
   &:hover {
@@ -62,18 +81,96 @@ const Logo = styled(Link)<LogoProps>`
   }
 `;
 
-const ButtonGroup = styled.div`
+interface ButtonGroupProps {
+  theme: { colors: ThemeColors };
+}
+
+const ButtonGroup = styled.div<ButtonGroupProps>`
   display: flex;
   gap: 12px;
+  align-items: center;
+  
+  ${media.md(`
+    display: none;
+  `)}
+`;
+
+const BottomNavigation = styled.div`
+  display: none;
+  
+  ${media.md(`
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: ${(props: { theme: { colors: ThemeColors } }) => 
+      props.theme.colors.primary === '#1e1e1e' ? '#1e1e1e' : '#ffffff'
+    } !important;
+    background: ${(props: { theme: { colors: ThemeColors } }) => 
+      props.theme.colors.primary === '#1e1e1e' ? '#1e1e1e' : '#ffffff'
+    } !important;
+    opacity: 1 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: ${zIndex.navbar};
+    height: 60px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px;
+    box-sizing: border-box;
+    width: 100%;
+  `)}
+`;
+
+const NavItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  padding: 8px 0;
+  width: 25%;
+  box-sizing: border-box;
+  
+  svg {
+    font-size: 1.5rem;
+  }
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.accent};
+  }
+`;
+
+const LogoutNavItem = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  padding: 8px 0;
+  width: 25%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  
+  svg {
+    font-size: 1.5rem;
+  }
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.accent};
+  }
 `;
 
 interface ButtonProps {
   variant?: 'primary';
   theme: { colors: ThemeColors };
+  fullWidth?: boolean;
 }
 
 const Button = styled(Link)<ButtonProps>`
-  padding: 8px 16px;
+  padding: 6px 20px;
   font-size: 1rem;
   font-weight: 600;
   color: ${props => props.variant === 'primary' ? props.theme.colors.primary : props.theme.colors.accent};
@@ -85,6 +182,18 @@ const Button = styled(Link)<ButtonProps>`
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 36px;
+  
+  ${media.md(`
+    width: ${(props: ButtonProps) => props.fullWidth ? '100%' : 'auto'};
+    min-width: 70px;
+    height: 34px;
+    padding: 4px 16px;
+  `)}
 
   &:hover {
     transform: translateY(-2px);
@@ -99,10 +208,11 @@ const Button = styled(Link)<ButtonProps>`
 
 interface LogoutButtonProps {
   theme: { colors: ThemeColors };
+  fullWidth?: boolean;
 }
 
 const LogoutButton = styled.button<LogoutButtonProps>`
-  padding: 8px 16px;
+  padding: 6px 20px;
   font-size: 1rem;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
@@ -111,6 +221,18 @@ const LogoutButton = styled.button<LogoutButtonProps>`
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 36px;
+  
+  ${media.md(`
+    width: ${(props: LogoutButtonProps) => props.fullWidth ? '100%' : 'auto'};
+    min-width: 70px;
+    height: 34px;
+    padding: 4px 16px;
+  `)}
 
   &:hover {
     transform: translateY(-2px);
@@ -145,6 +267,7 @@ const ThemeToggle = styled.button<ThemeToggleProps>`
   height: 36px;
   position: relative;
   overflow: hidden;
+  ${touchFriendly.icon}
 
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
@@ -182,11 +305,30 @@ const ThemeToggle = styled.button<ThemeToggleProps>`
   }
 `;
 
-const NavBar: React.FC<NavBarProps> = ({ transparent }) => {
+// Remove MobileMenuButton and Overlay as they're no longer needed
+
+const NavBar: React.FC<NavBarProps> = ({ transparent = false }) => {
   const { user, logout } = useAuth();
   const themeContext = useTheme();
-  const { theme, toggleTheme, colors } = themeContext;
+  const { theme, toggleTheme } = themeContext;
   const isDarkMode = theme === 'dark';
+  const [scrolled, setScrolled] = useState(false);
+
+  // Handle scroll event to change navbar appearance
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -201,39 +343,88 @@ const NavBar: React.FC<NavBarProps> = ({ transparent }) => {
   };
 
   return (
-    <Nav theme={themeContext}>
-      <Logo to="/" theme={themeContext} isDarkMode={isDarkMode}>
-        <img 
-          src={isDarkMode ? `${process.env.PUBLIC_URL}/chessMn-white.png` : `${process.env.PUBLIC_URL}/chessMn-black.png`} 
-          alt="Chess.mn Logo" 
-        />
-        <span>chess.mn</span>
-      </Logo>
-      <ButtonGroup>
-        <ThemeToggle 
-          onClick={handleThemeToggle} 
-          aria-label="Toggle theme"
-          isDarkMode={isDarkMode}
+    <>
+      <Nav theme={themeContext} transparent={transparent && !scrolled}>
+        <Logo to="/" theme={themeContext} isDarkMode={isDarkMode}>
+          <img 
+            src={isDarkMode ? `${process.env.PUBLIC_URL}/chessMn-white.png` : `${process.env.PUBLIC_URL}/chessMn-black.png`} 
+            alt="Chess.mn Logo" 
+          />
+          <span>chess.mn</span>
+        </Logo>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <ThemeToggle 
+            onClick={handleThemeToggle} 
+            aria-label="Toggle theme"
+            isDarkMode={isDarkMode}
+            theme={themeContext}
+          >
+            <SunIcon className="sun-icon icon" />
+            <MoonIcon className="moon-icon icon" />
+          </ThemeToggle>
+          
+          <ButtonGroup theme={themeContext}>
+            <Button to="/blog" theme={themeContext}>Blog</Button>
+            
+            {!user ? (
+              <>
+                <Button to="/login" theme={themeContext}>Login</Button>
+                <Button to="/register" variant="primary" theme={themeContext}>Register</Button>
+              </>
+            ) : (
+              <>
+                <Button to="/profile" theme={themeContext}>Profile</Button>
+                <Button to="/analysis" theme={themeContext}>Analysis</Button>
+                <LogoutButton onClick={handleLogout} theme={themeContext}>Logout</LogoutButton>
+              </>
+            )}
+          </ButtonGroup>
+        </div>
+      </Nav>
+      
+      {/* Bottom Navigation for Mobile */}
+      {user ? (
+        <BottomNavigation 
           theme={themeContext}
+          style={{
+            backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+            opacity: 1
+          }}
         >
-          <SunIcon className="sun-icon icon" />
-          <MoonIcon className="moon-icon icon" />
-        </ThemeToggle>
-        <Button to="/blog" theme={themeContext}>Blog</Button>
-        {!user ? (
-          <>
-            <Button to="/login" theme={themeContext}>Login</Button>
-            <Button to="/register" variant="primary" theme={themeContext}>Register</Button>
-          </>
-        ) : (
-          <>
-            <Button to="/profile" theme={themeContext}>Profile</Button>
-            <Button to="/analysis" theme={themeContext}>Analysis</Button>
-            <LogoutButton onClick={handleLogout} theme={themeContext}>Logout</LogoutButton>
-          </>
-        )}
-      </ButtonGroup>
-    </Nav>
+          <NavItem to="/blog" theme={themeContext}>
+            <div>{FaBlog({})}</div>
+          </NavItem>
+          <NavItem to="/profile" theme={themeContext}>
+            <div>{FaUser({})}</div>
+          </NavItem>
+          <NavItem to="/analysis" theme={themeContext}>
+            <div>{FaChartBar({})}</div>
+          </NavItem>
+          <LogoutNavItem onClick={handleLogout} theme={themeContext}>
+            <div>{FaSignOutAlt({})}</div>
+          </LogoutNavItem>
+        </BottomNavigation>
+      ) : (
+        <BottomNavigation 
+          theme={themeContext}
+          style={{
+            backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+            opacity: 1
+          }}
+        >
+          <NavItem to="/blog" theme={themeContext}>
+            <div>{FaBlog({})}</div>
+          </NavItem>
+          <NavItem to="/login" theme={themeContext}>
+            <div>{FaUser({})}</div>
+          </NavItem>
+          <NavItem to="/register" theme={themeContext}>
+            <div>{FaSignOutAlt({})}</div>
+          </NavItem>
+        </BottomNavigation>
+      )}
+    </>
   );
 };
 

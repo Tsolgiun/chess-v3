@@ -11,6 +11,10 @@ const LoginContainer = styled.div`
   justify-content: center;
   min-height: calc(100vh - 80px);
   padding: 2rem;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 90px; /* Add padding for the bottom navigation bar */
+  }
 `;
 
 const LoginForm = styled.form`

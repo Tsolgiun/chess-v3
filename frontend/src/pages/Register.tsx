@@ -18,6 +18,10 @@ const Container = styled.div<ContainerProps>`
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 90px; /* Add margin for the bottom navigation bar */
+  }
 `;
 
 interface TitleProps {

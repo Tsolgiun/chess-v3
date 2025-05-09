@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { CapturedPiecesProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
+import { media, spacing } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {
@@ -28,6 +29,20 @@ const Container = styled.div<ContainerProps>`
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    
+    ${media.md(`
+        gap: 10px;
+        margin-bottom: 16px;
+        padding: 12px;
+        border-radius: 10px;
+    `)}
+    
+    ${media.sm(`
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 10px;
+        border-radius: 8px;
+    `)}
 `;
 
 interface TitleProps {
@@ -40,6 +55,16 @@ const Title = styled.h3<TitleProps>`
     color: ${({ theme }) => theme.colors.text};
     font-weight: 600;
     transition: color 0.3s ease;
+    
+    ${media.md(`
+        margin: 0 0 10px 0;
+        font-size: 1rem;
+    `)}
+    
+    ${media.sm(`
+        margin: 0 0 8px 0;
+        font-size: 0.95rem;
+    `)}
 `;
 
 interface RowProps {
@@ -59,6 +84,18 @@ const Row = styled.div<RowProps>`
     transition: all 0.3s ease;
     position: relative;
     
+    ${media.md(`
+        padding: 8px 12px;
+        border-radius: 8px;
+        min-height: 36px;
+    `)}
+    
+    ${media.sm(`
+        padding: 6px 10px;
+        border-radius: 6px;
+        min-height: 32px;
+    `)}
+    
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
@@ -75,6 +112,10 @@ const Row = styled.div<RowProps>`
                               props.advantage < 0 ? '#e74c3c' : 'transparent'};
         border-top-left-radius: 10px;
         border-bottom-left-radius: 10px;
+        
+        ${media.sm(`
+            width: 3px;
+        `)}
     }
 `;
 
@@ -83,6 +124,14 @@ const PiecesContainer = styled.div`
     flex-wrap: wrap;
     gap: 6px;
     animation: ${fadeIn} 0.3s ease-out;
+    
+    ${media.md(`
+        gap: 5px;
+    `)}
+    
+    ${media.sm(`
+        gap: 4px;
+    `)}
 `;
 
 const PieceGroup = styled.div`
@@ -90,6 +139,14 @@ const PieceGroup = styled.div`
     align-items: center;
     margin-right: 8px;
     position: relative;
+    
+    ${media.md(`
+        margin-right: 7px;
+    `)}
+    
+    ${media.sm(`
+        margin-right: 6px;
+    `)}
 `;
 
 interface PieceProps {
@@ -106,6 +163,16 @@ const Piece = styled.div<PieceProps>`
     background-repeat: no-repeat;
     filter: ${props => props.isDimmed ? 'brightness(0.8)' : 'drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.2))'};
     transition: all 0.2s ease;
+    
+    ${media.md(`
+        width: 24px;
+        height: 24px;
+    `)}
+    
+    ${media.sm(`
+        width: 20px;
+        height: 20px;
+    `)}
 
     &:hover {
         transform: scale(1.15);
@@ -132,6 +199,22 @@ const PieceCount = styled.span<PieceCountProps>`
     justify-content: center;
     font-weight: 600;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    
+    ${media.md(`
+        width: 16px;
+        height: 16px;
+        font-size: 0.65rem;
+        bottom: -4px;
+        right: -4px;
+    `)}
+    
+    ${media.sm(`
+        width: 14px;
+        height: 14px;
+        font-size: 0.6rem;
+        bottom: -3px;
+        right: -3px;
+    `)}
 `;
 
 interface MaterialDifferenceProps {
@@ -151,6 +234,18 @@ const MaterialDifference = styled.div<MaterialDifferenceProps>`
     background: ${({ theme }) => `${theme.colors.secondary}80`};
     border-radius: 6px;
     transition: all 0.3s ease;
+    
+    ${media.md(`
+        font-size: 0.9rem;
+        padding: 3px 7px;
+        border-radius: 5px;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.85rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+    `)}
     
     &::before {
         content: ${props => props.advantage > 0 ? '"+"' : ''};

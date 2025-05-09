@@ -261,6 +261,10 @@ const Container = styled(motion.div)<{ theme: { colors: ThemeColors } }>`
   background: ${({ theme }) => theme.colors.primary};
   transition: background-color 0.3s ease;
   min-height: calc(100vh - 80px);
+  
+  @media (max-width: 768px) {
+    padding-bottom: 90px; /* Add padding for the bottom navigation bar */
+  }
 `;
 
 const BackLink = styled(Link)<{ theme: { colors: ThemeColors } }>`

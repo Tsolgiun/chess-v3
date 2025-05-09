@@ -14,6 +14,7 @@ import GameResultModal from '../components/GameResultModal/GameResultModal';
 import { useGame } from '../context/GameContext';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeColors } from '../types/interfaces';
+import { media, spacing } from '../styles/responsive';
 
 interface ContainerProps {
   theme?: { colors: ThemeColors };
@@ -27,11 +28,33 @@ const Container = styled(motion.div)<ContainerProps>`
   grid-template-columns: minmax(auto, 700px) minmax(300px, 1fr);
   gap: 40px;
   align-items: start;
+  width: 100%;
 
-  @media (max-width: 1200px) {
+  ${media.xl(`
+    grid-template-columns: 3fr 2fr;
+    gap: 30px;
+    padding: ${spacing.md};
+  `)}
+
+  ${media.lg(`
     grid-template-columns: 1fr;
     max-width: 800px;
-  }
+    gap: 30px;
+  `)}
+  
+  ${media.md(`
+    padding: ${spacing.md} ${spacing.sm};
+    gap: 20px;
+    margin-top: 75px;
+    padding-bottom: 70px; /* Add padding for the bottom navigation bar */
+  `)}
+  
+  ${media.sm(`
+    padding: ${spacing.sm};
+    padding-bottom: 70px; /* Add padding for the bottom navigation bar */
+    gap: 15px;
+    margin-top: 70px;
+  `)}
 `;
 
 interface BoardWrapperProps {
@@ -46,6 +69,18 @@ const BoardWrapper = styled(motion.div)<BoardWrapperProps>`
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   padding: 30px;
   transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  ${media.md(`
+    padding: 20px;
+  `)}
+  
+  ${media.sm(`
+    padding: 15px;
+    border-radius: 12px;
+  `)}
 `;
 
 interface ControlPanelProps {
@@ -62,6 +97,10 @@ const ControlPanel = styled(motion.div)<ControlPanelProps>`
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  
+  ${media.md(`
+    border-radius: 12px;
+  `)}
 `;
 
 interface GameControlBarProps {
@@ -75,6 +114,16 @@ const GameControlBar = styled.div<GameControlBarProps>`
   padding: 15px 20px;
   background: ${({ theme }) => theme.colors.secondary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  
+  ${media.md(`
+    padding: 12px 15px;
+  `)}
+  
+  ${media.sm(`
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  `)}
 `;
 
 interface ControlButtonProps {
@@ -97,6 +146,11 @@ const ControlButton = styled.button<ControlButtonProps>`
   font-size: 0.9rem;
   transition: all 0.2s ease;
   
+  ${media.sm(`
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  `)}
+  
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -111,6 +165,12 @@ const ControlButton = styled.button<ControlButtonProps>`
 const ControlButtonGroup = styled.div`
   display: flex;
   gap: 8px;
+  
+  ${media.sm(`
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  `)}
 `;
 
 interface TabContainerProps {
@@ -121,6 +181,10 @@ const TabContainer = styled.div<TabContainerProps>`
   display: flex;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   background: ${({ theme }) => theme.colors.secondary};
+  
+  ${media.sm(`
+    justify-content: space-around;
+  `)}
 `;
 
 interface TabProps {
@@ -135,6 +199,17 @@ const Tab = styled.div<TabProps>`
   color: ${props => props.active ? props.theme.colors.accent : props.theme.colors.text};
   border-bottom: 2px solid ${props => props.active ? props.theme.colors.accent : 'transparent'};
   transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+  
+  ${media.md(`
+    padding: 10px 15px;
+  `)}
+  
+  ${media.sm(`
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  `)}
   
   &:hover {
     color: ${({ theme }) => theme.colors.accent};
@@ -151,6 +226,14 @@ const TabContent = styled.div<TabContentProps>`
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  
+  ${media.md(`
+    padding: 15px;
+  `)}
+  
+  ${media.sm(`
+    padding: 12px 10px;
+  `)}
   
   /* Scrollbar styling */
   &::-webkit-scrollbar {
@@ -186,6 +269,12 @@ const GameStatusBar = styled.div<GameStatusBarProps>`
   margin-bottom: 15px;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.accent};
+  
+  ${media.sm(`
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  `)}
 `;
 
 interface StatusMessageProps {
@@ -201,6 +290,10 @@ const StatusMessage = styled.div<StatusMessageProps>`
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  ${media.sm(`
+    padding: 15px;
+  `)}
 
   p {
     margin-top: 10px;
@@ -223,14 +316,38 @@ const WaitingOverlay = styled.div`
   border-radius: 16px;
   z-index: 10;
   
+  ${media.md(`
+    border-radius: 12px;
+  `)}
+  
   h2 {
     font-size: 1.8rem;
     margin-bottom: 1rem;
+    
+    ${media.md(`
+      font-size: 1.6rem;
+    `)}
+    
+    ${media.sm(`
+      font-size: 1.4rem;
+      margin-bottom: 0.8rem;
+    `)}
   }
   
   p {
     font-size: 1.2rem;
     margin-bottom: 1.5rem;
+    text-align: center;
+    padding: 0 15px;
+    
+    ${media.md(`
+      font-size: 1.1rem;
+    `)}
+    
+    ${media.sm(`
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+    `)}
   }
   
   .spinner {
@@ -240,6 +357,12 @@ const WaitingOverlay = styled.div`
     border-radius: 50%;
     border-top-color: white;
     animation: spin 1s ease-in-out infinite;
+    
+    ${media.sm(`
+      width: 40px;
+      height: 40px;
+      border-width: 4px;
+    `)}
   }
   
   @keyframes spin {

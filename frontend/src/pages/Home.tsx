@@ -8,27 +8,52 @@ import Button from '../components/common/Button';
 import Board from '../components/Board/Board';
 import NavBar from '../components/NavBar/NavBar';
 import { motion } from 'framer-motion';
+import { media, spacing } from '../styles/responsive';
 
 const HomeContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
+  
+  ${media.md(`
+    padding-bottom: 70px; /* Add padding for the bottom navigation bar */
+  `)}
 `;
 
 const ContentContainer = styled.div`
   display: grid;
   grid-template-columns: minmax(auto, 700px) minmax(300px, 1fr);
   gap: 40px;
-  padding: 2rem;
+  padding: ${spacing.lg};
   margin-top: 80px;
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
+  width: 100%;
   
-  @media (max-width: 1200px) {
+  ${media.xl(`
+    grid-template-columns: 3fr 2fr;
+    gap: 30px;
+    padding: ${spacing.md};
+  `)}
+  
+  ${media.lg(`
     grid-template-columns: 1fr;
     max-width: 800px;
-  }
+    gap: 30px;
+  `)}
+  
+  ${media.md(`
+    padding: ${spacing.md} ${spacing.sm};
+    gap: 20px;
+  `)}
+  
+  ${media.sm(`
+    padding: ${spacing.sm};
+    gap: 15px;
+    margin-top: 70px;
+  `)}
 `;
 
 const BoardContainer = styled(motion.div)`
@@ -37,6 +62,18 @@ const BoardContainer = styled(motion.div)`
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   padding: 30px;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  ${media.md(`
+    padding: 20px;
+  `)}
+  
+  ${media.sm(`
+    padding: 15px;
+    border-radius: 12px;
+  `)}
   
   &:hover {
     transform: translateY(-5px);
@@ -54,6 +91,15 @@ const ControlPanel = styled(motion.div)`
   height: fit-content;
   transition: all 0.3s ease;
   
+  ${media.md(`
+    padding: 20px;
+  `)}
+  
+  ${media.sm(`
+    padding: 15px;
+    border-radius: 12px;
+  `)}
+  
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
@@ -65,6 +111,16 @@ const ControlTitle = styled.h2`
   margin-bottom: 1.5rem;
   color: ${({ theme }) => theme.colors.text};
   text-align: center;
+  
+  ${media.md(`
+    font-size: 1.6rem;
+    margin-bottom: 1.2rem;
+  `)}
+  
+  ${media.sm(`
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  `)}
 `;
 
 const ButtonGroup = styled.div`
@@ -73,6 +129,11 @@ const ButtonGroup = styled.div`
   flex-wrap: wrap;
   justify-content: center;
   margin-bottom: 20px;
+  
+  ${media.sm(`
+    gap: 8px;
+    margin-bottom: 15px;
+  `)}
 `;
 
 const StyledButton = styled(Button)<{ isActive?: boolean }>`
@@ -80,6 +141,12 @@ const StyledButton = styled(Button)<{ isActive?: boolean }>`
   background-color: ${props => props.isActive ? props.theme.colors.accent : props.theme.colors.secondary};
   color: ${props => props.isActive ? '#ffffff' : props.theme.colors.text};
   border: 1px solid ${props => props.isActive ? props.theme.colors.accent : props.theme.colors.border};
+  
+  ${media.sm(`
+    min-width: 120px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  `)}
   
   &:hover {
     transform: translateY(-2px);
@@ -93,6 +160,11 @@ const DifficultySelector = styled.div`
   gap: 10px;
   width: 100%;
   margin: 15px 0;
+  
+  ${media.sm(`
+    gap: 8px;
+    margin: 12px 0;
+  `)}
 `;
 
 const DifficultyLabel = styled.div`
@@ -101,11 +173,20 @@ const DifficultyLabel = styled.div`
   text-align: center;
   margin-bottom: 5px;
   color: ${({ theme }) => theme.colors.text};
+  
+  ${media.sm(`
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  `)}
 `;
 
 const DifficultySlider = styled.div`
   width: 100%;
   padding: 0 10px;
+  
+  ${media.sm(`
+    padding: 0 5px;
+  `)}
 `;
 
 const Slider = styled.input`
@@ -125,6 +206,11 @@ const Slider = styled.input`
     cursor: pointer;
     border: 2px solid ${({ theme }) => theme.colors.primary};
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    ${media.sm(`
+      width: 18px;
+      height: 18px;
+    `)}
   }
   
   &::-moz-range-thumb {
@@ -135,6 +221,11 @@ const Slider = styled.input`
     cursor: pointer;
     border: 2px solid ${({ theme }) => theme.colors.primary};
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    ${media.sm(`
+      width: 18px;
+      height: 18px;
+    `)}
   }
 `;
 
@@ -146,6 +237,11 @@ const DifficultyMarkers = styled.div`
   font-size: 0.8rem;
   color: ${({ theme }) => theme.colors.text};
   opacity: 0.8;
+  
+  ${media.sm(`
+    font-size: 0.7rem;
+    margin-top: 6px;
+  `)}
 `;
 
 const DifficultyValue = styled.div`
@@ -154,6 +250,11 @@ const DifficultyValue = styled.div`
   color: ${({ theme }) => theme.colors.accent};
   text-align: center;
   margin: 10px 0;
+  
+  ${media.sm(`
+    font-size: 1.3rem;
+    margin: 8px 0;
+  `)}
 `;
 
 const ColorOptions = styled.div`
@@ -161,6 +262,13 @@ const ColorOptions = styled.div`
   justify-content: center;
   gap: 10px;
   margin: 15px 0;
+  
+  ${media.sm(`
+    gap: 8px;
+    margin: 12px 0;
+    flex-direction: column;
+    align-items: center;
+  `)}
 `;
 
 const OrDivider = styled.div`
@@ -180,6 +288,11 @@ const OrDivider = styled.div`
     height: 1px;
     background: ${({ theme }) => theme.colors.border};
   }
+  
+  ${media.sm(`
+    margin: 12px 0;
+    gap: 10px;
+  `)}
 `;
 
 const FormWrapper = styled.form`
@@ -188,6 +301,10 @@ const FormWrapper = styled.form`
   gap: 12px;
   width: 100%;
   align-items: center;
+  
+  ${media.sm(`
+    gap: 10px;
+  `)}
 `;
 
 const Input = styled.input`
@@ -213,6 +330,12 @@ const Input = styled.input`
     color: ${({ theme }) => theme.colors.text};
     opacity: 0.5;
   }
+  
+  ${media.sm(`
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    max-width: 100%;
+  `)}
 `;
 
 const Home: React.FC = () => {

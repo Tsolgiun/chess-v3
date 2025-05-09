@@ -6,6 +6,7 @@ import { ThemeColors } from '../../types/interfaces';
 import { loadSounds, playMoveSound } from '../../utils/sounds';
 import { BoardProps } from '../../types/props';
 import { Chess } from 'chess.js';
+import { media, spacing } from '../../styles/responsive';
 
 const BoardWrapper = styled.div<{ isDisabled?: boolean }>`
     width: min(80vw, 640px);
@@ -20,6 +21,26 @@ const BoardWrapper = styled.div<{ isDisabled?: boolean }>`
         pointer-events: none;
         opacity: 0.8;
     `}
+    
+    ${media.xl(`
+        width: min(75vw, 600px);
+    `)}
+    
+    ${media.lg(`
+        width: min(80vw, 560px);
+    `)}
+    
+    ${media.md(`
+        width: min(85vw, 480px);
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+    `)}
+    
+    ${media.sm(`
+        width: min(90vw, 360px);
+        border-radius: 8px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    `)}
     
     &:hover {
         transform: translateY(-2px);
@@ -36,6 +57,16 @@ const BoardGrid = styled.div`
     position: relative;
     border-radius: 4px 4px 0 0;
     overflow: hidden;
+    
+    ${media.md(`
+        border-width: 1.5px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    `)}
+    
+    ${media.sm(`
+        border-width: 1px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    `)}
 `;
 
 // Evaluation bar components
@@ -49,6 +80,16 @@ const EvaluationBarContainer = styled.div`
     display: flex;
     flex-direction: row;
     margin-bottom: 20px; /* Add space for the detailed evaluation */
+    
+    ${media.md(`
+        height: 25px;
+        margin-bottom: 18px;
+    `)}
+    
+    ${media.sm(`
+        height: 20px;
+        margin-bottom: 16px;
+    `)}
 `;
 
 const EvaluationDetail = styled.div`
@@ -64,6 +105,18 @@ const EvaluationDetail = styled.div`
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     z-index: 10;
     white-space: nowrap;
+    
+    ${media.md(`
+        font-size: 0.8rem;
+        padding: 3px 6px;
+        bottom: -28px;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.75rem;
+        padding: 2px 5px;
+        bottom: -26px;
+    `)}
 `;
 
 interface EvaluationValueProps {
@@ -97,6 +150,14 @@ const EvaluationText = styled.div`
     font-size: 0.9rem;
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
     z-index: 1;
+    
+    ${media.md(`
+        font-size: 0.85rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.8rem;
+    `)}
 `;
 
 interface SquareProps {
@@ -155,6 +216,13 @@ const Square = styled.div<SquareProps>`
             transform: translate(-50%, -50%) scale(1.2);
             background-color: ${props.isLight ? 'rgba(0, 0, 0, 0.18)' : 'rgba(255, 255, 255, 0.22)'};
         }
+        
+        ${media.sm(`
+            &::after {
+                width: 30%;
+                height: 30%;
+            }
+        `)}
     `}
 
     ${props => props.isLastMove && `
@@ -180,19 +248,43 @@ const Coordinate = styled.div<CoordinateProps>`
     opacity: 0.8;
     color: ${props => props.isLight ? '#b58863' : '#f0d9b5'};
     
+    ${media.md(`
+        font-size: 0.65rem;
+    `)}
+    
+    ${media.sm(`
+        font-size: 0.6rem;
+        padding: 1px;
+    `)}
+    
     ${props => props.position === 'bottom-left' && `
         bottom: 2px;
         left: 2px;
+        
+        ${media.sm(`
+            bottom: 1px;
+            left: 1px;
+        `)}
     `}
     
     ${props => props.position === 'bottom-right' && `
         bottom: 2px;
         right: 2px;
+        
+        ${media.sm(`
+            bottom: 1px;
+            right: 1px;
+        `)}
     `}
     
     ${props => props.position === 'top-left' && `
         top: 2px;
         left: 2px;
+        
+        ${media.sm(`
+            top: 1px;
+            left: 1px;
+        `)}
     `}
 `;
 
@@ -244,6 +336,10 @@ const Piece = styled.div<PieceProps>`
     filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
     transition: all 0.2s ease;
     
+    ${media.sm(`
+        filter: drop-shadow(0.5px 0.5px 0.5px rgba(0, 0, 0, 0.25));
+    `)}
+    
     ${props => props.isClickable && css`
         cursor: grab;
         animation: ${hoverAnimation} 2s infinite ease-in-out;
@@ -268,6 +364,16 @@ const ClassificationBadge = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
+    
+    ${media.md(`
+        width: 20px;
+        height: 20px;
+    `)}
+    
+    ${media.sm(`
+        width: 16px;
+        height: 16px;
+    `)}
 `;
 
 const ClassificationIcon = styled.img`
@@ -275,6 +381,17 @@ const ClassificationIcon = styled.img`
     height: 20px;
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
     transition: transform 0.2s ease;
+    
+    ${media.md(`
+        width: 18px;
+        height: 18px;
+    `)}
+    
+    ${media.sm(`
+        width: 14px;
+        height: 14px;
+        filter: drop-shadow(0.5px 0.5px 1px rgba(0, 0, 0, 0.4));
+    `)}
     
     &:hover {
         transform: scale(1.2);
