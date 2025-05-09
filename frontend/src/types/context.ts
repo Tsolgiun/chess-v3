@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { User, Game, ThemeColors, EngineEvaluation, AnalysisLine } from './interfaces';
+import { User, ThemeColors, EngineEvaluation, AnalysisLine } from './interfaces';
 import { PlayerColor } from './enums';
 
 export interface AuthContextType {

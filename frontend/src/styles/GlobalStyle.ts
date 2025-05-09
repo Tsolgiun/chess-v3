@@ -1,6 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 import { ThemeColors } from '../types';
-import { media, fluidTypography, spacing, touchFriendly } from './responsive';
+import { media, spacing, touchFriendly } from './responsive';
 
 interface GlobalStyleProps {
   theme: {

@@ -1,6 +1,5 @@
 import { Chess } from 'chess.js';
 import { Stockfish17, Stockfish17Engine, PositionEvaluation } from '../lib/engine/stockfish17';
-import { EngineName } from '../types/enums';
 import { EngineEvaluation, AnalysisLine } from '../types/interfaces';
 
 type AnalysisCallback = (line: AnalysisLine) => void;
@@ -227,4 +226,5 @@ class ChessAPIService {
     }
 }
 
-export default new ChessAPIService();
+const chessAPI = new ChessAPIService();
+export default chessAPI;

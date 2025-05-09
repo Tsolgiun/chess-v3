@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { EvaluatedPosition } from '../../lib/chess/types/Position';
 import { Classification } from '../../lib/chess/classification';
@@ -61,7 +61,7 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
     return fen.includes(" b ") ? 'white' : 'black';
   };
 
-  const drawGraph = () => {
+  const drawGraph = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || positions.length === 0) return;
 
@@ -187,7 +187,7 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
         );
       }
     }
-  };
+  }, [positions, currentMoveIndex, boardFlipped, hoverIndex, mousePosition]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -213,11 +213,11 @@ const EvaluationGraph: React.FC<EvaluationGraphProps> = ({
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, []);
+  }, [drawGraph]);
 
   useEffect(() => {
     drawGraph();
-  }, [positions, currentMoveIndex, boardFlipped, hoverIndex, mousePosition]);
+  }, [drawGraph]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;

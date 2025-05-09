@@ -5,7 +5,7 @@ import { useGame } from '../../context/GameContext';
 import { useTheme } from '../../context/ThemeContext';
 import GameResultModal from '../GameResultModal/GameResultModal';
 import { ThemeColors } from '../../types/interfaces';
-import { media, spacing } from '../../styles/responsive';
+import { media } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {

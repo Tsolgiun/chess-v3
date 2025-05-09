@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { Chess } from 'chess.js';
 import { useTheme } from '../../context/ThemeContext';
@@ -351,7 +351,7 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
   };
 
   // Fetch games from Chess.com API
-  const fetchChessComGames = async () => {
+  const fetchChessComGames = useCallback(async () => {
     if (!username.trim()) {
       setError('Please enter a Chess.com username');
       return;
@@ -412,10 +412,10 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [username, currentYear, currentMonth]);
 
   // Fetch games from Lichess.org API
-  const fetchLichessGames = async () => {
+  const fetchLichessGames = useCallback(async () => {
     if (!username.trim()) {
       setError('Please enter a Lichess username');
       return;
@@ -482,7 +482,7 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [username, currentYear, currentMonth]);
 
   // Handle game import from either Chess.com or Lichess
   const handleGameImport = () => {
@@ -562,21 +562,16 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
     return 'Unknown players';
   };
 
-  // Fetch games based on the active tab
-  const fetchGames = () => {
-    if (activeTab === 'chesscom') {
-      fetchChessComGames();
-    } else if (activeTab === 'lichess') {
-      fetchLichessGames();
-    }
-  };
-
   // Effect to fetch games when month/year changes
   useEffect(() => {
     if (username && (activeTab === 'chesscom' || activeTab === 'lichess')) {
-      fetchGames();
+      if (activeTab === 'chesscom') {
+        fetchChessComGames();
+      } else if (activeTab === 'lichess') {
+        fetchLichessGames();
+      }
     }
-  }, [currentYear, currentMonth, username, activeTab, fetchGames]);
+  }, [currentYear, currentMonth, username, activeTab, fetchChessComGames, fetchLichessGames]);
 
   return (
     <Container theme={theme}>
@@ -633,7 +628,13 @@ const PgnImport: React.FC<PgnImportProps> = ({ onImport, initialPgn = '' }) => {
         />
         <Button 
           theme={theme}
-          onClick={fetchGames}
+          onClick={() => {
+            if (activeTab === 'chesscom') {
+              fetchChessComGames();
+            } else if (activeTab === 'lichess') {
+              fetchLichessGames();
+            }
+          }}
           disabled={!username.trim() || isLoading}
         >
           {isLoading ? 'Loading...' : 'Fetch Games'}

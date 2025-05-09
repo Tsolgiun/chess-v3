@@ -399,12 +399,12 @@ const TimeControlGrid = styled.div`
     max-width: 500px;
 `;
 
-interface TimeControlOptionProps {
+interface TimeControlItemProps {
     theme: { colors: ThemeColors };
     selected: boolean;
 }
 
-const TimeControlOption = styled.div<TimeControlOptionProps>`
+const TimeControlItem = styled.div<TimeControlItemProps>`
     padding: 12px;
     border-radius: 8px;
     text-align: center;
@@ -479,7 +479,7 @@ const timeControlCategories: TimeControlCategory[] = [
 
 const GameSetup: React.FC = () => {
     const navigate = useNavigate();
-    const { createGame, joinGame, startAIGame, gameId, status, isGameActive } = useGame();
+    const { createGame, startAIGame, gameId, status, isGameActive } = useGame();
     const [joinGameId, setJoinGameId] = useState<string>('');
     const [showAIOptions, setShowAIOptions] = useState<boolean>(false);
     const [difficulty, setDifficulty] = useState<number>(10); // Default to middle value
@@ -690,14 +690,14 @@ const GameSetup: React.FC = () => {
                                 {timeControlCategories
                                     .find(category => category.name === activeTimeCategory)?.options
                                     .map(option => (
-                                        <TimeControlOption 
+                                <TimeControlItem 
                                             key={option.name}
                                             selected={selectedTimeControl.name === option.name}
                                             onClick={() => setSelectedTimeControl(option)}
                                         >
                                             <TimeControlName>{option.name}</TimeControlName>
                                             <TimeControlDescription>{option.description}</TimeControlDescription>
-                                        </TimeControlOption>
+                                        </TimeControlItem>
                                     ))
                                 }
                             </TimeControlGrid>

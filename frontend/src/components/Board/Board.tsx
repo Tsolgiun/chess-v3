@@ -3,10 +3,10 @@ import styled, { keyframes, css } from 'styled-components';
 import { useGame } from '../../context/GameContext';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeColors } from '../../types/interfaces';
-import { loadSounds, playMoveSound } from '../../utils/sounds';
+import { loadSounds } from '../../utils/sounds';
 import { BoardProps } from '../../types/props';
 import { Chess } from 'chess.js';
-import { media, spacing } from '../../styles/responsive';
+import { media } from '../../styles/responsive';
 
 const BoardWrapper = styled.div<{ isDisabled?: boolean }>`
     width: min(80vw, 640px);
@@ -119,10 +119,6 @@ const EvaluationDetail = styled.div`
     `)}
 `;
 
-interface EvaluationValueProps {
-    percentage: number;
-    theme: { colors: ThemeColors };
-}
 
 const WhiteBar = styled.div<{ width: string }>`
     height: 100%;
@@ -465,27 +461,30 @@ const Board: React.FC<BoardProps> = ({
     // Update smoothed evaluation when evaluation changes
     useEffect(() => {
         if (evaluation !== null) {
-            // Always update the ref
+            // Store the current evaluation in the ref
+            const prevEval = prevEvaluationRef.current;
+            
+            // Update the ref with the new evaluation
             prevEvaluationRef.current = evaluation;
             
-            // Store the current value to avoid dependency on smoothedEvaluation
-            const currentSmoothedEval = prevEvaluationRef.current !== null ? 
-                prevEvaluationRef.current : 0;
+            // Skip the first render or when evaluation hasn't actually changed
+            if (prevEval === evaluation) {
+                return;
+            }
             
             // Use a higher smoothing factor for more responsive updates
             const smoothingFactor = 0.5; // Increased from 0.2
             
             // For big jumps, move faster
-            if (Math.abs(evaluation - currentSmoothedEval) > 50) {
+            if (Math.abs(evaluation - smoothedEvaluation) > 50) {
                 // Jump directly to 80% of the target value for large changes
-                setSmoothedEvaluation(currentSmoothedEval + 0.8 * (evaluation - currentSmoothedEval));
+                setSmoothedEvaluation(prev => prev + 0.8 * (evaluation - prev));
             } else {
-                // Calculate new value based on current evaluation and stored value
-                const newValue = currentSmoothedEval + smoothingFactor * (evaluation - currentSmoothedEval);
-                setSmoothedEvaluation(newValue);
+                // Calculate new value based on current evaluation and previous smoothed value
+                setSmoothedEvaluation(prev => prev + smoothingFactor * (evaluation - prev));
             }
         }
-    }, [evaluation]); // Remove smoothedEvaluation from dependencies
+    }, [evaluation, smoothedEvaluation]); // Include both dependencies but with safeguards
     
     // Calculate evaluation percentage for the bar
     const getEvaluationPercentage = (): number => {
@@ -505,7 +504,6 @@ const Board: React.FC<BoardProps> = ({
         playerColor, 
         makeMove, 
         isGameActive,
-        isAIGame,
         isAIThinking,
         lastMove
     } = analysisMode ? { 
@@ -513,7 +511,6 @@ const Board: React.FC<BoardProps> = ({
         playerColor: 'white',
         makeMove: () => true,
         isGameActive: true,
-        isAIGame: false,
         isAIThinking: false,
         lastMove: null
     } : demoMode ? {
@@ -521,7 +518,6 @@ const Board: React.FC<BoardProps> = ({
         playerColor: 'white',
         makeMove: () => true,
         isGameActive: true,
-        isAIGame: false,
         isAIThinking: false,
         lastMove: null
     } : gameContext;
@@ -533,15 +529,6 @@ const Board: React.FC<BoardProps> = ({
     useEffect(() => {
         setLocalBoardFlipped(boardFlipped);
     }, [boardFlipped]);
-    
-    // Function to handle board flipping
-    const handleBoardFlip = (flipped: boolean): void => {
-        setLocalBoardFlipped(flipped);
-        // Notify parent component if onBoardFlip is provided
-        if (onBoardFlip) {
-            onBoardFlip(flipped);
-        }
-    };
     
     const effectiveBoardFlipped = analysisMode ? localBoardFlipped : boardFlipped;
     

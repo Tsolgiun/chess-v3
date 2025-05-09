@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Game, User, Blog, AnalysisLine } from './interfaces';
+import { User, Blog, AnalysisLine } from './interfaces';
 import { PlayerColor } from './enums';
 
 export interface BoardProps {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Chess } from 'chess.js';
 import { ReviewService } from '../services/ReviewService';
 import NavBar from '../components/NavBar/NavBar';
 import { motion } from 'framer-motion';
@@ -377,7 +376,6 @@ const Game: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('moves');
   
   const { 
-    socket,
     joinGame, 
     isGameActive, 
     isWaitingForPlayer,
@@ -399,8 +397,7 @@ const Game: React.FC = () => {
     drawOfferFrom,
     isAIGame,
     gameOver,
-    gameResult,
-    setGameForReview
+    gameResult
   } = useGame();
   
   // Original time control state and effect removed since progress bar has been removed

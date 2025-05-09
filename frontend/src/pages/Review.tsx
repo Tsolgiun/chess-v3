@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { Chess } from 'chess.js';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -8,8 +8,6 @@ import Board from '../components/Board/Board';
 import MoveHistory from '../components/MoveHistory/MoveHistory';
 import CapturedPieces from '../components/CapturedPieces/CapturedPieces';
 import Analysis from '../components/Analysis/Analysis';
-import { useTheme } from '../context/ThemeContext';
-import { useGame } from '../context/GameContext';
 import { ThemeColors } from '../types';
 
 const PageContainer = styled.div`
@@ -189,13 +187,6 @@ interface GameData {
 const Review: React.FC = () => {
     const { reviewGameId: urlGameId } = useParams<{ reviewGameId?: string }>();
     const navigate = useNavigate();
-    const theme = useTheme();
-    const gameContext = useGame();
-    // Access game review data from context
-    // Note: These properties might not be explicitly defined in the type
-    const reviewFen = (gameContext as any).reviewFen;
-    const reviewMoves = (gameContext as any).reviewMoves || [];
-    const contextGameId = (gameContext as any).reviewGameId;
     
     const [chess, setChess] = useState<Chess>(() => new Chess());
     const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
@@ -203,23 +194,20 @@ const Review: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(urlGameId === 'demo' ? 'analysis' : 'moves');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [localReviewMoves, setLocalReviewMoves] = useState<string[]>([]);
+    const [moves, setMoves] = useState<string[]>([]);
+    
+    const localReviewMoves = useMemo(() => moves, [moves]);
 
-    useEffect(() => {
-        setLocalReviewMoves(reviewMoves || []);
-    }, [reviewMoves]);
 
     // Load the review game
     useEffect(() => {
         const loadGameData = async () => {
             try {
                 setLoading(true);
-                // Use URL param first, fall back to context
-                const gameIdToUse = urlGameId || contextGameId;
-                console.log(`Loading game data for review: ${gameIdToUse}`);
+                console.log(`Loading game data for review: ${urlGameId}`);
                 
                 // Handle demo game ID for analysis page
-                if (gameIdToUse === 'demo') {
+                if (urlGameId === 'demo') {
                     console.log("Loading demo game for analysis");
                     const newChess = new Chess();
                     
@@ -239,32 +227,17 @@ const Review: React.FC = () => {
                     });
                     
                     setChess(newChess);
-                    setLocalReviewMoves(movesNotation);
+                            setMoves(movesNotation);
                     setCurrentMoveIndex(movesNotation.length - 1);
                     setLoading(false);
                     return;
                 }
                 
-                // First try to use context data
-                if (reviewFen) {
-                    console.log("Using game data from context");
-                    try {
-                        const newChess = new Chess(reviewFen);
-                        setChess(newChess);
-                        setCurrentMoveIndex(-1);
-                        setLoading(false);
-                        return;
-                    } catch (error) {
-                        console.error("Error using context data:", error);
-                        // Continue to server fetch as fallback
-                    }
-                }
-                
-                // If we don't have context data or it failed, try to fetch from server
-                if (gameIdToUse) {
+                // Try to fetch from server if not demo mode
+                if (urlGameId) {
                     try {
                         console.log("Fetching game data from server");
-                        const response = await fetch(`http://localhost:3001/api/games/${gameIdToUse}/review`);
+                        const response = await fetch(`http://localhost:3001/api/games/${urlGameId}/review`);
                         
                         if (!response.ok) {
                             throw new Error(`Server returned ${response.status}: ${response.statusText}`);
@@ -284,7 +257,7 @@ const Review: React.FC = () => {
                         
                         // Set the moves from the server
                         if (gameData.moveHistory && Array.isArray(gameData.moveHistory)) {
-                            setLocalReviewMoves(gameData.moveHistory);
+                            setMoves(gameData.moveHistory);
                         }
                         
                         setLoading(false);
@@ -305,12 +278,12 @@ const Review: React.FC = () => {
         };
         
         loadGameData();
-    }, [urlGameId, contextGameId, reviewFen, reviewMoves]);
+    }, [urlGameId]);
 
     // Navigate to a specific move
     const goToMove = (moveIndex: number): void => {
-        // Reset to starting position with the saved FEN if available
-        const newChess = reviewFen ? new Chess(reviewFen) : new Chess();
+        // Reset to starting position
+        const newChess = new Chess();
         
         // Apply moves up to the selected index
         for (let i = 0; i <= moveIndex && i < localReviewMoves.length; i++) {
@@ -446,7 +419,7 @@ const Review: React.FC = () => {
                         currentMoveIndex={currentMoveIndex}
                         onPositionChange={(newPosition, newMoves, newIndex) => {
                             setChess(newPosition);
-                            setLocalReviewMoves(newMoves);
+                            setMoves(newMoves);
                             setCurrentMoveIndex(newIndex);
                         }}
                     />

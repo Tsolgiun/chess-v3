@@ -1,10 +1,9 @@
 import React, { useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
-import { useGame } from '../../context/GameContext';
 import { MoveHistoryProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
-import { media, spacing } from '../../styles/responsive';
+import { media } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {
@@ -382,7 +381,6 @@ const MoveHistory: React.FC<MoveHistoryProps> = ({
     onLastMove
 }) => {
     const theme = useTheme();
-    const { game } = useGame();
     const containerRef = useRef<HTMLDivElement>(null);
     
     // Group moves by pairs (White and Black)

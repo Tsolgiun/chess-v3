@@ -32,11 +32,6 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     const [evaluation, setEvaluation] = useState<any>(null);
     const [analysisLines, setAnalysisLines] = useState<any[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-    
-    // Review mode state
-    const [reviewFen, setReviewFen] = useState<string | null>(null);
-    const [reviewMoves, setReviewMoves] = useState<string[]>([]);
-    const [reviewGameId, setReviewGameId] = useState<string | null>(null);
 
     // Utility functions
     const updateStatus = useCallback((currentGame: Chess) => {
@@ -512,16 +507,10 @@ const flipBoard = useCallback((flipped?: boolean) => {
         }
     }, [socket, isGameActive, drawOffered]);
 
-    const setGameForReview = useCallback((gameInstance: any, gameMoves: string[], reviewId: string) => {
-        try {
-            setReviewFen(gameInstance.fen());
-            setReviewMoves(gameMoves);
-            setReviewGameId(reviewId);
-            return true;
-        } catch (error) {
-            console.error('Error setting game for review:', error);
-            return false;
-        }
+    // This function is now a stub since review state is handled in the Review component
+    const setGameForReview = useCallback(() => {
+        console.log('Review state is now handled in the Review component');
+        return false;
     }, []);
 
     // Game creation functions

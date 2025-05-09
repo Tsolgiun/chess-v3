@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { Chess } from 'chess.js';
@@ -283,8 +283,8 @@ const AnalysisPage: React.FC = () => {
     }
   }, [location]); // Add location as a dependency
   
-  // For manual PGN imports, we'll still need this
-  const [initialPgn, setInitialPgn] = useState<string>('');
+  // For manual PGN imports
+  const [initialPgn] = useState<string>('');
 
     // Handle PGN import
     const handlePgnImport = (moves: string[], initialFen?: string) => {
@@ -296,8 +296,8 @@ const AnalysisPage: React.FC = () => {
         setActiveTab('moves');
     };
 
-    // Navigate to a specific move
-    const goToMove = (moveIndex: number): void => {
+    // Navigate to a specific move - wrapped in useCallback
+    const goToMove = useCallback((moveIndex: number): void => {
         // Reset to starting position
         const newChess = new Chess();
         
@@ -312,21 +312,28 @@ const AnalysisPage: React.FC = () => {
         
         setChess(newChess);
         setCurrentMoveIndex(moveIndex);
-    };
+    }, [moveHistory]);
 
-    // Navigation controls
-    const goToStart = (): void => { goToMove(-1); };
-    const goToPrevious = (): void => { 
+    // Navigation controls wrapped in useCallback to prevent recreation on every render
+    const goToStart = useCallback((): void => { 
+        goToMove(-1); 
+    }, [goToMove]);
+    
+    const goToPrevious = useCallback((): void => { 
         if (currentMoveIndex > -1) {
             goToMove(currentMoveIndex - 1);
         }
-    };
-    const goToNext = (): void => { 
+    }, [currentMoveIndex, goToMove]);
+    
+    const goToNext = useCallback((): void => { 
         if (currentMoveIndex < moveHistory.length - 1) {
             goToMove(currentMoveIndex + 1);
         }
-    };
-    const goToEnd = (): void => { goToMove(moveHistory.length - 1); };
+    }, [currentMoveIndex, moveHistory.length, goToMove]);
+    
+    const goToEnd = useCallback((): void => { 
+        goToMove(moveHistory.length - 1); 
+    }, [moveHistory.length, goToMove]);
 
     // Handle keyboard navigation
     React.useEffect(() => {

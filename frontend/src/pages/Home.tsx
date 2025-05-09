@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import { useGame } from '../context/GameContext';
-import { PlayerColor } from '../types/enums';
 import Button from '../components/common/Button';
 import Board from '../components/Board/Board';
 import NavBar from '../components/NavBar/NavBar';
@@ -340,12 +338,10 @@ const Input = styled.input`
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  const { startAIGame, createGame, joinGame } = useGame();
+  const { startAIGame, createGame } = useGame();
   
   const [showAIOptions, setShowAIOptions] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<number>(10); // Default to middle value
-  const [playerColor, setPlayerColor] = useState<string>('white');
   const [joinGameId, setJoinGameId] = useState<string>('');
   
   const handlePlayVsAI = (color: string) => {

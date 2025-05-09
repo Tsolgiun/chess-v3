@@ -1,10 +1,7 @@
-import { Chess, Square } from "chess.js";
+import { Chess } from "chess.js";
 import { Classification, centipawnClassifications, getEvaluationLossThreshold } from "./classification";
 import { EvaluatedPosition } from "./types/Position";
-import { EngineLine, Evaluation } from "./types/Engine";
-import { getPositionWinPercentage, getLineWinPercentage } from "./winPercentage";
-import { getAttackers, isPieceHanging, pieceValues } from "./board";
-
+import { Evaluation } from "./types/Engine";
 /**
  * Classifies moves in a game
  * @param positions Array of evaluated positions
@@ -76,9 +73,8 @@ export function classifyMoves(
             position.opening = currentOpening;
         }
 
-        // Get the top move and second top move from the last position
+        // Get the top move from the last position
         let topMove = lastPosition.topLines.find(line => line.id === 1);
-        let secondTopMove = lastPosition.topLines.find(line => line.id === 2);
         if (!topMove) continue;
 
         // Get the evaluation of the previous position and current position

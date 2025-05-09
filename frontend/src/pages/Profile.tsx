@@ -3,11 +3,7 @@ import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar/NavBar';
 import BoardColorSelector from '../components/BoardColorSelector/BoardColorSelector';
-import { ThemeColors, User } from '../types';
-
-interface ContainerProps {
-  theme: { colors: ThemeColors };
-}
+import { ThemeColors } from '../types';
 
 const Container = styled.div`
   max-width: 800px;
@@ -85,41 +81,6 @@ const UserMeta = styled.div<UserMetaProps>`
   transition: color 0.3s ease;
 `;
 
-const Stats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-`;
-
-interface StatCardProps {
-  color?: string;
-  theme: { colors: ThemeColors };
-}
-
-const StatCard = styled.div<StatCardProps>`
-  background: ${props => props.color || props.theme.colors.secondary};
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  color: white;
-  transition: transform 0.2s ease, background-color 0.3s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-`;
-
-const StatValue = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 5px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 14px;
-  opacity: 0.9;
-`;
 
 interface ButtonProps {
   variant?: 'outline' | 'filled';

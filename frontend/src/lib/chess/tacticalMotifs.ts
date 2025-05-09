@@ -1,6 +1,6 @@
 import { Chess, Square } from "chess.js";
 import { EvaluatedPosition } from "./types";
-import { getAttackers, isPieceHanging, pieceValues } from "./board";
+import { getAttackers, pieceValues } from "./board";
 
 /**
  * Types of tactical motifs that can be detected
@@ -46,8 +46,6 @@ function detectFork(fen: string, moveUci: string): DetectedMotif | null {
     
     // Find all squares that this piece attacks
     const attackedSquares: Square[] = [];
-    const board = game.board();
-    
     // For knights, check all possible knight moves
     if (piece.type === 'n') {
         const knightMoves = [

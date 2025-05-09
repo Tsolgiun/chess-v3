@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
 import { ThemeContextType, ThemeProviderProps, ThemeColors } from '../types';
 import { useAuth } from './AuthContext';
 
@@ -29,9 +29,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     };
   });
 
+  // Ref to track if user preferences have been loaded
+  const userPrefsLoaded = useRef(false);
+
   // Update board colors from user preferences when user data is loaded
   useEffect(() => {
-    if (user) {
+    if (user && !userPrefsLoaded.current) {
       const lightSquare = user.boardLightSquare || boardColors.lightSquare;
       const darkSquare = user.boardDarkSquare || boardColors.darkSquare;
       
@@ -45,8 +48,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         lightSquare,
         darkSquare
       }));
+      
+      userPrefsLoaded.current = true;
     }
-  }, [user, boardColors]);
+  }, [user]); // Removed boardColors dependency to prevent infinite loop
 
   // Update localStorage when theme changes
   useEffect(() => {

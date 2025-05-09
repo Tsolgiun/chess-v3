@@ -6,9 +6,8 @@ import { ThemeColors } from '../../types/interfaces';
 import { Stockfish17, PositionEvaluation } from '../../lib/engine/stockfish17';
 import analyze from '../../lib/chess/analysis';
 import { Classification } from '../../lib/chess/classification';
-import { EvaluatedPosition, EngineLine, Evaluation, Report } from '../../lib/chess/types';
+import { EvaluatedPosition, EngineLine, Evaluation } from '../../lib/chess/types';
 import { getWinPercentageFromEvaluation } from '../../lib/chess/winPercentage';
-import PgnImport from '../PgnImport/PgnImport';
 import DepthControl from '../DepthControl/DepthControl';
 import AnalysisLoadingScreen from './AnalysisLoadingScreen';
 
@@ -79,41 +78,6 @@ const EvaluationText = styled.div<ContainerProps>`
   z-index: 1;
 `;
 
-const EngineLines = styled.div`
-  margin-top: 16px;
-`;
-
-interface LineProps {
-  theme: { colors: ThemeColors };
-  $isTopLine?: boolean;
-}
-
-const Line = styled.div<LineProps>`
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: ${props => props.$isTopLine 
-    ? `${props.theme.colors.accent}33` 
-    : `${props.theme.colors.primary}33`};
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const EvalBadge = styled.span<ContainerProps>`
-  background: ${({ theme }) => theme.colors.accent};
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.85rem;
-`;
-
-const MovesText = styled.span<ContainerProps>`
-  color: ${({ theme }) => theme.colors.text};
-  font-family: monospace;
-  font-size: 0.95rem;
-`;
 
 const ClassificationContainer = styled.div<ContainerProps>`
   display: flex;
@@ -168,14 +132,6 @@ const ClassificationText = styled.span<ContainerProps>`
   font-size: 1rem;
 `;
 
-const LoadingIndicator = styled.div<ContainerProps>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  color: ${({ theme }) => theme.colors.text};
-  font-style: italic;
-`;
 
 const ButtonGroup = styled.div`
   display: flex;
@@ -245,8 +201,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
   const [evaluation, setEvaluation] = useState<PositionEvaluation | null>(null);
   const [positions, setPositions] = useState<EvaluatedPosition[]>([]);
   const [currentClassification, setCurrentClassification] = useState<Classification | null>(null);
-  const [moveClassifications, setMoveClassifications] = useState<Record<string, string>>({});
-  const [report, setReport] = useState<Report | null>(null);
   const [analysisDepth, setAnalysisDepth] = useState<number>(10); // Reduced from 16 to 10 for faster analysis
   const [error, setError] = useState<string | null>(null);
   const [totalPositions, setTotalPositions] = useState<number>(0);
@@ -273,7 +227,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         engine.shutdown();
       }
     };
-  }, []);
+  }, [engine]);
   
   // Reset to starting position
   const resetToStartingPosition = () => {
@@ -383,15 +337,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     }));
   };
 
-  // Handle PGN import
-  const handlePgnImport = (moves: string[], initialFen?: string) => {
-    if (onPositionChange) {
-      const newChess = initialFen ? new Chess(initialFen) : new Chess();
-      
-      // Always start from the initial position, regardless of whether there's an initial FEN or not
-      onPositionChange(newChess, moves, -1);
-    }
-  };
   
   // Handle depth change
   const handleDepthChange = (depth: number) => {
@@ -566,7 +511,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
       console.log("Analysis report generated:", analysisReport);
       
       // Update state with final results
-      setReport(analysisReport);
       setPositions(analysisReport.positions);
       
       // Update current classification
@@ -588,13 +532,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     }
   };
 
-  // Stop analysis
-  const stopAnalysis = () => {
-    if (engine) {
-      engine.stopSearch();
-    }
-    setIsAnalyzing(false);
-  };
 
   // Memoize the move classifications calculation to prevent unnecessary recalculations
   const getMoveClassifications = useCallback((positions: EvaluatedPosition[], moveIndex: number): Record<string, string> => {
@@ -659,8 +596,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
       
       if (hasChanged) {
         prevMoveClassificationsRef.current = newMoveClassifications;
-        setMoveClassifications(newMoveClassifications);
-        
         // Notify parent component about move classifications change
         if (onMoveClassificationsChange) {
           onMoveClassificationsChange(newMoveClassifications);
@@ -669,8 +604,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     } else if (Object.keys(prevMoveClassificationsRef.current).length > 0) {
       // Only reset if we previously had classifications
       prevMoveClassificationsRef.current = {};
-      setMoveClassifications({});
-      
       // Notify parent component about move classifications change
       if (onMoveClassificationsChange) {
         onMoveClassificationsChange({});
@@ -682,8 +615,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     onMoveClassificationsChange, 
     getMoveClassifications, 
     getCurrentClassification,
-    setCurrentClassification,
-    setMoveClassifications
+    setCurrentClassification
   ]);
 
   return (

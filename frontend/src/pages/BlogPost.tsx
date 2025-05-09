@@ -19,7 +19,7 @@ const TagIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
   <div {...props}>{FaTag({})}</div>
 );
 
-interface BlogPost {
+interface BlogPostData {
   id: number;
   title: string;
   excerpt: string;
@@ -31,7 +31,7 @@ interface BlogPost {
 }
 
 // Sample blog posts data (same as in Blog.tsx)
-const blogPosts: BlogPost[] = [
+const blogPosts: BlogPostData[] = [
   {
     id: 1,
     title: "How to Play Chess: A Beginner's Guide",

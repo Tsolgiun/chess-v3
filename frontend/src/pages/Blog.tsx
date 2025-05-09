@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import { ThemeColors } from '../types';
 
 const Container = styled(motion.div)<{ theme: { colors: ThemeColors } }>`
@@ -179,9 +178,6 @@ const blogPosts: BlogPost[] = [
 ];
 
 const Blog: React.FC = () => {
-  const { theme } = useTheme();
-  const isDarkMode = theme === 'dark';
-  
   const containerVariants = {
     initial: { opacity: 0 },
     animate: { 

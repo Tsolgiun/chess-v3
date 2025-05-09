@@ -3,7 +3,7 @@ import styled, { keyframes, css } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { TimerProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
-import { media, spacing } from '../../styles/responsive';
+import { media } from '../../styles/responsive';
 
 const pulse = keyframes`
   0% {

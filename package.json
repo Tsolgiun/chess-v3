@@ -33,6 +33,7 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
+    "eslint": "^8.57.1",
     "firebase": "^11.6.1"
   }
 }

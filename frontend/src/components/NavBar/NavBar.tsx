@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FaSun, FaMoon, FaBars, FaTimes, FaBlog, FaUser, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
+import { FaSun, FaMoon, FaBlog, FaUser, FaChartBar, FaSignOutAlt } from 'react-icons/fa';
 import { NavBarProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
 import { media, touchFriendly, zIndex } from '../../styles/responsive';
@@ -14,12 +14,6 @@ const SunIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
 );
 const MoonIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
   <div {...props}>{FaMoon({})}</div>
-);
-const MenuIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
-  <div {...props}>{FaBars({})}</div>
-);
-const CloseIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
-  <div {...props}>{FaTimes({})}</div>
 );
 
 interface NavProps {

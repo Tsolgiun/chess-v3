@@ -63,7 +63,7 @@ const EvaluationBar: React.FC<EvaluationBarProps> = ({
   boardFlipped = false,
   movedPlayer = 'white'
 }) => {
-  const { colors } = useTheme();
+  useTheme(); // Keep the hook since we use theme in styled components
   const [whiteWidth, setWhiteWidth] = useState('50%');
   const [blackWidth, setBlackWidth] = useState('50%');
   const [evaluationText, setEvaluationText] = useState('0.0');

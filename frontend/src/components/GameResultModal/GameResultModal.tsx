@@ -3,7 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { useTheme } from '../../context/ThemeContext';
 import { GameResultModalProps } from '../../types/props';
 import { ThemeColors } from '../../types/interfaces';
-import { media, spacing } from '../../styles/responsive';
+import { media } from '../../styles/responsive';
 
 const fadeIn = keyframes`
   from {
