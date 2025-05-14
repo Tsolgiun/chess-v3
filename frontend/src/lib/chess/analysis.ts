@@ -79,10 +79,20 @@ function processPositions(positions: EvaluatedPosition[]): void {
         // Calculate evaluation loss
         const evalLoss = calculateEvaluationLoss(position, lastPosition, moveColour, previousEvaluation, evaluation);
 
-        // If this move was the only legal one, apply forced
-        if (!secondTopMove) {
+        // Check if this move was truly forced (only one legal move in the position)
+        let boardForLegalMoves = new Chess(lastPosition.fen);
+        const legalMoves = boardForLegalMoves.moves({ verbose: true });
+        
+        // If there's only one legal move, it's truly forced
+        if (legalMoves.length === 1) {
             position.classification = Classification.FORCED;
             continue;
+        }
+        
+        // If there's no second top move but multiple legal moves exist,
+        // this is not a truly forced move - continue with normal classification
+        if (!secondTopMove) {
+            // We'll proceed with normal classification instead of marking as forced
         }
 
         // Classify the move

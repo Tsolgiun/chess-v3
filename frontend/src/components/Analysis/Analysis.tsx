@@ -3,7 +3,12 @@ import styled from 'styled-components';
 import { Chess } from 'chess.js';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeColors } from '../../types/interfaces';
-import { Stockfish17, PositionEvaluation } from '../../lib/engine/stockfish17';
+import { 
+  Stockfish17, 
+  PositionEvaluation, 
+  StockfishWorkerPool,
+  analyzePositionWithTimeout
+} from '../../lib/engine/stockfish17';
 import analyze from '../../lib/chess/analysis';
 import { Classification } from '../../lib/chess/classification';
 import { EvaluatedPosition, EngineLine, Evaluation } from '../../lib/chess/types';
@@ -37,46 +42,6 @@ const Container = styled.div<ContainerProps>`
   gap: 20px;
 `;
 
-
-const EvaluationBar = styled.div<ContainerProps>`
-  width: 100%;
-  height: 30px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 4px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 16px;
-`;
-
-const WhiteBar = styled.div<{ width: string }>`
-  height: 100%;
-  width: ${props => props.width};
-  position: relative;
-  background-color: #ffffff;
-  transition: width 0.3s ease;
-`;
-
-const BlackBar = styled.div<{ width: string }>`
-  height: 100%;
-  width: ${props => props.width};
-  position: relative;
-  background-color: #000000;
-  transition: width 0.3s ease;
-`;
-
-const EvaluationText = styled.div<ContainerProps>`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #1976d2; /* Hardcoded blue color for the evaluation number */
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-  z-index: 1;
-`;
 
 
 const ClassificationContainer = styled.div<ContainerProps>`
@@ -209,25 +174,52 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
   // Ref to store the latest evaluation without triggering re-renders
   const latestEvaluationRef = useRef<PositionEvaluation | null>(null);
 
-  // Initialize the engine
+  // Initialize the worker pool
+  const workerPoolRef = useRef<StockfishWorkerPool | null>(null);
+  
   useEffect(() => {
-    const initEngine = async () => {
+    const initWorkerPool = async () => {
       try {
+        // Create a worker pool with 4 workers (or fewer based on device capabilities)
+        const workerCount = navigator.hardwareConcurrency 
+          ? Math.min(4, Math.max(2, navigator.hardwareConcurrency - 1)) 
+          : 2;
+        
+        console.log(`Initializing worker pool with ${workerCount} workers based on hardware concurrency`);
+        const pool = new StockfishWorkerPool(workerCount);
+        await pool.initialize();
+        workerPoolRef.current = pool;
+        
+        // Also initialize a single engine for live evaluation
         const stockfish = await Stockfish17.create(false);
         setEngine(stockfish);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to initialize Stockfish engine:', error);
+        
+        // Fallback to single engine if worker pool fails
+        try {
+          const stockfish = await Stockfish17.create(false);
+          setEngine(stockfish);
+        } catch (fallbackError) {
+          console.error('Failed to initialize fallback engine:', fallbackError);
+        }
       }
     };
 
-    initEngine();
+    initWorkerPool();
 
     return () => {
+      // Clean up both the worker pool and single engine
+      if (workerPoolRef.current) {
+        workerPoolRef.current.shutdown();
+        workerPoolRef.current = null;
+      }
+      
       if (engine) {
         engine.shutdown();
       }
     };
-  }, [engine]);
+  }, []);
   
   // Reset to starting position
   const resetToStartingPosition = () => {
@@ -249,7 +241,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     }
   }, 100); // 100ms debounce
   
-  // Update evaluation when position changes
+  // Update evaluation when position changes during active analysis
   useEffect(() => {
     if (engine && isAnalyzing && position) {
       const evaluateCurrentPosition = async () => {
@@ -266,7 +258,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
               debouncedSetEvaluation(evaluation);
             }
           });
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Error evaluating position:', error);
         }
       };
@@ -274,6 +266,39 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
       evaluateCurrentPosition();
     }
   }, [engine, isAnalyzing, position, onEvaluationChange, debouncedSetEvaluation]);
+  
+  // This effect ensures the evaluation is updated when navigating through moves with arrow keys
+  useEffect(() => {
+    // Only run this effect when not actively analyzing and we have positions data
+    if (!isAnalyzing && positions.length > 0 && currentMoveIndex >= 0 && currentMoveIndex < positions.length) {
+      console.log("Arrow navigation - updating evaluation for move index:", currentMoveIndex);
+      
+      const currentPosition = positions[currentMoveIndex];
+      if (currentPosition && currentPosition.topLines && currentPosition.topLines.length > 0) {
+        const topLine = currentPosition.topLines[0];
+        const evalType = topLine.evaluation.type;
+        const evalValue = topLine.evaluation.value;
+        
+        // Create a PositionEvaluation object from the topLine
+        const newEvaluation: PositionEvaluation = {
+          lines: [{
+            depth: topLine.depth,
+            pv: topLine.moveUCI ? [topLine.moveUCI] : [],
+            ...(evalType === 'cp' ? { cp: evalValue * 100 } : { mate: evalValue })
+          }]
+        };
+        
+        // Update local state
+        setEvaluation(newEvaluation);
+        
+        // Notify parent component directly
+        if (onEvaluationChange) {
+          const rawValue = evalType === 'cp' ? evalValue * 100 : evalValue;
+          onEvaluationChange(rawValue, evalType);
+        }
+      }
+    }
+  }, [currentMoveIndex, positions, isAnalyzing, onEvaluationChange]);
 
   // Format evaluation for display
   const formatEvaluation = (evaluation: PositionEvaluation | null): string => {
@@ -343,6 +368,129 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     setAnalysisDepth(depth);
   };
 
+  // Process positions in batches with parallel analysis
+  const analyzePositionsInBatches = async (
+    positions: EvaluatedPosition[],
+    batchSize: number = 8
+  ): Promise<EvaluatedPosition[]> => {
+    const results = [...positions]; // Create a copy to store results
+    const positionsToAnalyze = positions.filter((pos, idx) => {
+      // Always analyze first and last positions
+      if (idx === 0 || idx === positions.length - 1) return true;
+      
+      // Analyze every 2nd position
+      return idx % 2 === 0;
+    });
+    
+    console.log(`Analyzing ${positionsToAnalyze.length} out of ${positions.length} positions in batches of ${batchSize}`);
+    
+    // Check if we have a worker pool
+    if (!workerPoolRef.current) {
+      throw new Error('Worker pool not initialized');
+    }
+    
+    // Process positions in batches
+    for (let i = 0; i < positionsToAnalyze.length; i += batchSize) {
+      const batch = positionsToAnalyze.slice(i, i + batchSize);
+      console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(positionsToAnalyze.length / batchSize)}`);
+      
+      // Process batch in parallel
+      const batchPromises = batch.map(async (position, batchIndex) => {
+        try {
+          // Get a worker from the pool
+          const worker = workerPoolRef.current!.getNextWorker();
+          
+          // Try to analyze with increased timeout (10 seconds)
+          let evaluation;
+          try {
+            evaluation = await analyzePositionWithTimeout(
+              worker,
+              position.fen,
+              analysisDepth,
+              2, // multiPv
+              10000 // 10 second timeout
+            );
+          } catch (initialError) {
+            console.warn(`Initial analysis failed for position, retrying with lower depth:`, initialError);
+            
+            // Retry with lower depth if first attempt fails
+            try {
+              const reducedDepth = Math.max(8, analysisDepth - 4); // Reduce depth but not below 8
+              evaluation = await analyzePositionWithTimeout(
+                worker,
+                position.fen,
+                reducedDepth,
+                2, // multiPv
+                8000 // 8 second timeout for retry
+              );
+            } catch (retryError) {
+              console.error(`Retry analysis also failed:`, retryError);
+              
+              // Create a fallback evaluation if all attempts fail
+              // Always provide at least two lines to avoid false "forced" move classifications
+              evaluation = {
+                lines: [
+                  {
+                    depth: 1,
+                    cp: 0, // Neutral evaluation as fallback
+                    pv: []
+                  },
+                  {
+                    depth: 1,
+                    cp: -10, // Slightly worse alternative move
+                    pv: []
+                  }
+                ]
+              };
+            }
+          }
+          
+          // Convert evaluation to EngineLine format
+          const lines = convertToEngineLine(evaluation);
+          
+          // Find the position index in the original array
+          const posIndex = results.findIndex(p => p.fen === position.fen);
+          
+          // Update position with evaluation
+          if (posIndex !== -1) {
+            results[posIndex] = {
+              ...results[posIndex],
+              topLines: lines
+            };
+            
+            // If this is the current position, update the evaluation
+            if (posIndex === currentMoveIndex + 1) {
+              setEvaluation(evaluation);
+            }
+          }
+          
+          return { index: posIndex, success: true };
+        } catch (error) {
+          console.warn(`Error analyzing position in batch ${Math.floor(i / batchSize) + 1}, index ${batchIndex}:`, error);
+          return { index: -1, success: false };
+        }
+      });
+      
+      // Wait for all positions in this batch to complete
+      const batchResults = await Promise.allSettled(batchPromises);
+      
+      // Count successful analyses
+      const successCount = batchResults.filter(
+        result => result.status === 'fulfilled' && result.value.success
+      ).length;
+      
+      console.log(`Batch ${Math.floor(i / batchSize) + 1} completed: ${successCount}/${batch.length} positions analyzed successfully`);
+      
+      // Update progress after each batch
+      setCurrentPosition(Math.min(i + batchSize, positionsToAnalyze.length));
+      
+      // Update positions state to show progress
+      setPositions([...results]);
+    }
+    
+    return results;
+  };
+
   // Start analysis
   const startAnalysis = async () => {
     console.log("Starting analysis...");
@@ -350,6 +498,11 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     setError(null); // Reset any previous errors
     
     try {
+      // Check if worker pool is initialized
+      if (!workerPoolRef.current && !engine) {
+        throw new Error('Neither worker pool nor engine is initialized');
+      }
+      
       // Create positions array from move history
       const newPositions: EvaluatedPosition[] = [];
       const tempChess = new Chess();
@@ -388,126 +541,100 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
       // Set positions once initially
       setPositions(newPositions);
       
-      // Create a working copy of positions that we'll update during analysis
-      const workingPositions = [...newPositions];
+      // Determine batch size based on position count
+      const batchSize = Math.min(8, Math.max(2, Math.floor(positionsCount / 10)));
       
-      // Filter positions to analyze (every 2nd position + first and last)
-      // This significantly reduces analysis time while still providing good coverage
-      const positionsToAnalyze = workingPositions.filter((pos, idx) => {
-        // Always analyze first and last positions
-        if (idx === 0 || idx === workingPositions.length - 1) return true;
+      // Analyze positions in parallel batches
+      let analyzedPositions: EvaluatedPosition[];
+      
+      if (workerPoolRef.current) {
+        console.log("Using worker pool for parallel analysis");
+        analyzedPositions = await analyzePositionsInBatches(newPositions, batchSize);
+      } else if (engine) {
+        console.log("Falling back to single engine analysis");
+        // Use the existing sequential analysis as fallback
+        // This is a simplified version of the original code
+        const positionsToAnalyze = newPositions.filter((pos, idx) => {
+          if (idx === 0 || idx === newPositions.length - 1) return true;
+          return idx % 2 === 0;
+        });
         
-        // Analyze every 2nd position
-        return idx % 2 === 0;
-      });
-      
-      console.log(`Analyzing ${positionsToAnalyze.length} out of ${workingPositions.length} positions`);
-      
-      // Analyze each position with a more robust approach
-      if (engine) {
         for (let i = 0; i < positionsToAnalyze.length; i++) {
-          // Get the actual index in the workingPositions array
-          const posIndex = workingPositions.findIndex(p => p.fen === positionsToAnalyze[i].fen);
-          
-          // Update current position for progress display
           setCurrentPosition(i + 1);
-          
           const pos = positionsToAnalyze[i];
-          console.log(`Analyzing position ${i+1}/${positionsToAnalyze.length}: ${pos.fen}`);
-          
-          // Define a shorter timeout for each position analysis
-          const timeoutMs = 3000; // 3 seconds max per position (reduced from 10s)
+          const posIndex = newPositions.findIndex(p => p.fen === pos.fen);
           
           try {
-            // Use a more robust promise with timeout
-            await Promise.race([
-              new Promise<void>((resolve, reject) => {
-                // Track if this evaluation has been resolved
-                let isResolved = false;
+            // Try to analyze with increased timeout (10 seconds)
+            let evaluation;
+            try {
+              evaluation = await analyzePositionWithTimeout(
+                engine,
+                pos.fen,
+                analysisDepth,
+                2,
+                10000 // 10 second timeout
+              );
+            } catch (initialError) {
+              console.warn(`Initial analysis failed for position, retrying with lower depth:`, initialError);
+              
+              // Retry with lower depth if first attempt fails
+              try {
+                const reducedDepth = Math.max(8, analysisDepth - 4); // Reduce depth but not below 8
+                evaluation = await analyzePositionWithTimeout(
+                  engine,
+                  pos.fen,
+                  reducedDepth,
+                  2, // multiPv
+                  8000 // 8 second timeout for retry
+                );
+              } catch (retryError) {
+                console.error(`Retry analysis also failed:`, retryError);
                 
-                // Track the highest depth reached
-                let highestDepth = 0;
-                
-                // Set a timeout to resolve if taking too long
-                const timeoutId = setTimeout(() => {
-                  if (!isResolved) {
-                    console.log(`Position ${i+1} evaluation timed out at depth ${highestDepth}`);
-                    isResolved = true;
-                    resolve();
-                  }
-                }, timeoutMs);
-                
-                // Ensure we're requesting multiple lines (at least 2)
-                const multiPv = Math.max(2, analysisDepth >= 12 ? 3 : 2);
-                console.log(`Analyzing position ${i+1} with multiPv: ${multiPv}`);
-                
-                engine.evaluatePositionWithUpdate({
-                  fen: pos.fen,
-                  depth: analysisDepth,
-                  multiPv: multiPv,
-                  setPartialEval: (evaluation: PositionEvaluation) => {
-                    if (isResolved) return; // Skip if already resolved
-                    
-                    // Convert evaluation to EngineLine format
-                    const lines = convertToEngineLine(evaluation);
-                    
-                    // Track highest depth
-                    if (lines[0]?.depth > highestDepth) {
-                      highestDepth = lines[0].depth;
+                // Create a fallback evaluation if all attempts fail
+                // Always provide at least two lines to avoid false "forced" move classifications
+                evaluation = {
+                  lines: [
+                    {
+                      depth: 1,
+                      cp: 0, // Neutral evaluation as fallback
+                      pv: []
+                    },
+                    {
+                      depth: 1,
+                      cp: -10, // Slightly worse alternative move
+                      pv: []
                     }
-                    
-                    // Update the working position with the evaluation
-                    if (posIndex !== -1) {
-                      workingPositions[posIndex] = {
-                        ...workingPositions[posIndex],
-                        topLines: lines
-                      };
-                    }
-                    
-                    // If this is the current position, update the evaluation
-                    if (posIndex === currentMoveIndex + 1) {
-                      setEvaluation(evaluation);
-                    }
-                    
-                    // Resolve when we reach target depth or get close enough
-                    // Lower the threshold to 50% of target depth for faster analysis
-                    if (lines[0]?.depth >= analysisDepth || 
-                        (highestDepth > analysisDepth * 0.5)) {
-                      clearTimeout(timeoutId);
-                      if (!isResolved) {
-                        console.log(`Position ${i+1} evaluation complete at depth ${highestDepth}`);
-                        isResolved = true;
-                        resolve();
-                      }
-                    }
-                  }
-                });
-              }),
-              new Promise<void>((_, reject) => 
-                setTimeout(() => reject(new Error(`Position ${i+1} evaluation hard timeout`)), timeoutMs + 1000)
-              )
-            ]).catch(error => {
-              console.warn(`Position ${i+1} evaluation issue:`, error.message);
-              // Continue analysis even if one position times out
-            });
+                  ]
+                };
+              }
+            }
             
-            // Stop the current search before moving to the next position
-            engine.stopSearch();
+            const lines = convertToEngineLine(evaluation);
             
-            // Update positions state less frequently to avoid render loops
-            if (i % 3 === 0 || i === positionsToAnalyze.length - 1) {
-              setPositions([...workingPositions]);
+            if (posIndex !== -1) {
+              newPositions[posIndex] = {
+                ...newPositions[posIndex],
+                topLines: lines
+              };
+            }
+            
+            if (i % 3 === 0) {
+              setPositions([...newPositions]);
             }
           } catch (error) {
-            console.error(`Error evaluating position ${i+1}:`, error);
-            // Continue with next position even if one fails
+            console.warn(`Error in fallback analysis for position ${i+1}:`, error);
           }
         }
+        
+        analyzedPositions = newPositions;
+      } else {
+        throw new Error('No analysis engine available');
       }
       
       // After all positions are analyzed, generate the report
       console.log("All positions analyzed, generating report...");
-      const analysisReport = await analyze(workingPositions);
+      const analysisReport = await analyze(analyzedPositions);
       console.log("Analysis report generated:", analysisReport);
       
       // Update state with final results
@@ -519,12 +646,36 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         console.log("Current move classification:", classification);
         setCurrentClassification(classification || null);
       }
-    } catch (error) {
+      
+      // Update evaluation with the current position's evaluation
+      if (currentMoveIndex >= 0 && currentMoveIndex < analysisReport.positions.length) {
+        const currentPosition = analysisReport.positions[currentMoveIndex];
+        if (currentPosition && currentPosition.topLines && currentPosition.topLines.length > 0) {
+          const topLine = currentPosition.topLines[0];
+          const evalType = topLine.evaluation.type;
+          const evalValue = topLine.evaluation.value;
+          
+          // Create a PositionEvaluation object from the topLine
+          const newEvaluation: PositionEvaluation = {
+            lines: [{
+              depth: topLine.depth,
+              pv: topLine.moveUCI ? [topLine.moveUCI] : [],
+              ...(evalType === 'cp' ? { cp: evalValue * 100 } : { mate: evalValue })
+            }]
+          };
+          
+          console.log("Updating evaluation bar with:", newEvaluation);
+          setEvaluation(newEvaluation);
+        }
+      }
+    } catch (error: unknown) {
       console.error("Error in analysis process:", error);
-      // Ensure we stop analysis even if there's an error
+      
+      // Ensure we stop any ongoing analysis
       if (engine) {
         engine.stopSearch();
       }
+      
       // Set error message for display
       setError(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -563,13 +714,14 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
   const prevClassificationRef = useRef<Classification | null>(null);
   const prevMoveClassificationsRef = useRef<Record<string, string>>({});
   
-  // Update classifications when positions or currentMoveIndex changes
+  // Update classifications and evaluation when positions or currentMoveIndex changes
   useEffect(() => {
-    // Skip update if nothing has changed
+    // Skip update only if nothing has changed AND we have positions
+    // This ensures we don't skip updates when navigating with arrow keys
     if (
       prevPositionsLengthRef.current === positions.length &&
       prevMoveIndexRef.current === currentMoveIndex &&
-      positions.length === 0
+      positions.length > 0 // Only skip if we have positions AND nothing changed
     ) {
       return;
     }
@@ -577,6 +729,8 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     // Update refs
     prevPositionsLengthRef.current = positions.length;
     prevMoveIndexRef.current = currentMoveIndex;
+    
+    console.log("Evaluation update triggered - currentMoveIndex:", currentMoveIndex, "positions length:", positions.length);
     
     // Get current classification
     const classification = getCurrentClassification(positions, currentMoveIndex);
@@ -599,6 +753,28 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         // Notify parent component about move classifications change
         if (onMoveClassificationsChange) {
           onMoveClassificationsChange(newMoveClassifications);
+        }
+      }
+      
+      // Update evaluation with the current position's evaluation
+      if (currentMoveIndex >= 0 && currentMoveIndex < positions.length) {
+        const currentPosition = positions[currentMoveIndex];
+        if (currentPosition && currentPosition.topLines && currentPosition.topLines.length > 0) {
+          const topLine = currentPosition.topLines[0];
+          const evalType = topLine.evaluation.type;
+          const evalValue = topLine.evaluation.value;
+          
+          // Create a PositionEvaluation object from the topLine
+          const newEvaluation: PositionEvaluation = {
+            lines: [{
+              depth: topLine.depth,
+              pv: topLine.moveUCI ? [topLine.moveUCI] : [],
+              ...(evalType === 'cp' ? { cp: evalValue * 100 } : { mate: evalValue })
+            }]
+          };
+          
+          console.log("Updating evaluation bar for move index:", currentMoveIndex, newEvaluation);
+          setEvaluation(newEvaluation);
         }
       }
     } else if (Object.keys(prevMoveClassificationsRef.current).length > 0) {
@@ -661,14 +837,6 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         </>
       ) : (
         <>
-          <EvaluationBar theme={theme}>
-            <WhiteBar width={`${getEvaluationValue(evaluation)}%`} />
-            <BlackBar width={`${100 - getEvaluationValue(evaluation)}%`} />
-            <EvaluationText theme={theme}>
-              {formatEvaluation(evaluation)}
-            </EvaluationText>
-          </EvaluationBar>
-          
           {currentClassification && currentMoveIndex >= 0 && (
             <ClassificationContainer theme={theme}>
               <ClassificationBadgeContainer>

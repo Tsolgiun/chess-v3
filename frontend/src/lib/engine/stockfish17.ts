@@ -27,6 +27,143 @@ export interface Stockfish17Engine {
   shutdown: () => void;
 }
 
+/**
+ * Worker pool for managing multiple Stockfish engine instances
+ */
+export class StockfishWorkerPool {
+  private workers: Stockfish17Engine[] = [];
+  private maxWorkers: number;
+  private initialized = false;
+  private currentWorkerIndex = 0;
+
+  constructor(maxWorkers = 4) {
+    this.maxWorkers = Math.max(1, Math.min(maxWorkers, 8)); // Between 1 and 8 workers
+  }
+
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    
+    try {
+      console.log(`Initializing worker pool with ${this.maxWorkers} workers...`);
+      
+      // Create workers in parallel
+      const workerPromises = Array(this.maxWorkers)
+        .fill(null)
+        .map(() => Stockfish17.create(false).catch(err => {
+          console.warn('Failed to create worker with standard config, trying fallback:', err);
+          return Stockfish17.create(true); // Try lite version as fallback
+        }));
+      
+      this.workers = await Promise.all(workerPromises);
+      this.initialized = true;
+      console.log(`Worker pool initialized with ${this.workers.length} workers`);
+    } catch (error) {
+      console.error('Failed to initialize worker pool:', error);
+      throw new Error('Failed to initialize Stockfish worker pool');
+    }
+  }
+
+  getNextWorker(): Stockfish17Engine {
+    if (!this.initialized || this.workers.length === 0) {
+      throw new Error('Worker pool not initialized');
+    }
+    
+    // Round-robin worker selection
+    const worker = this.workers[this.currentWorkerIndex];
+    this.currentWorkerIndex = (this.currentWorkerIndex + 1) % this.workers.length;
+    return worker;
+  }
+
+  shutdown(): void {
+    console.log('Shutting down worker pool...');
+    this.workers.forEach(worker => worker.shutdown());
+    this.workers = [];
+    this.initialized = false;
+    this.currentWorkerIndex = 0;
+  }
+}
+
+/**
+ * Analyze a position with timeout
+ */
+export async function analyzePositionWithTimeout(
+  worker: Stockfish17Engine,
+  fen: string,
+  depth: number,
+  multiPv: number = 2,
+  timeoutMs: number = 10000
+): Promise<PositionEvaluation> {
+  // Create a promise that resolves when analysis completes or when timeout is reached
+  return new Promise<PositionEvaluation>((resolve, reject) => {
+    let latestEval: PositionEvaluation | null = null;
+    let isResolved = false;
+    
+    // Set timeout to ensure we don't wait forever
+    const timeout = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        worker.stopSearch();
+        
+        if (latestEval) {
+          console.log(`Position analysis timed out after ${timeoutMs}ms, using best available evaluation`);
+          
+          // Ensure we have at least two lines to prevent false "forced" move classifications
+          if (latestEval.lines && latestEval.lines.length === 1) {
+            // Add a second line with a slightly worse evaluation
+            const firstLine = latestEval.lines[0];
+            const secondLine: PositionEvaluationLine = {
+              depth: firstLine.depth > 0 ? firstLine.depth - 1 : 1,
+              pv: firstLine.pv.slice(0),
+              cp: firstLine.cp !== undefined ? firstLine.cp - 10 : undefined, // 0.1 pawns worse if cp exists
+              mate: firstLine.mate !== undefined ? 
+                (firstLine.mate > 0 ? firstLine.mate + 1 : firstLine.mate - 1) : // One move longer if mate exists
+                undefined
+            };
+            
+            latestEval.lines.push(secondLine);
+          }
+          
+          resolve(latestEval);
+        } else {
+          reject(new Error(`Position analysis timed out after ${timeoutMs}ms with no evaluation`));
+        }
+      }
+    }, timeoutMs);
+    
+    // Start the analysis
+    worker.evaluatePositionWithUpdate({
+      fen,
+      depth,
+      multiPv,
+      setPartialEval: (evaluation: PositionEvaluation) => {
+        // Store the latest evaluation
+        latestEval = evaluation;
+        
+        // Resolve early if we reach target depth
+        if (!isResolved && evaluation.lines.length > 0 && evaluation.lines[0]?.depth >= depth) {
+          clearTimeout(timeout);
+          isResolved = true;
+          worker.stopSearch();
+          resolve(evaluation);
+        }
+      }
+    }).catch(error => {
+      if (!isResolved) {
+        clearTimeout(timeout);
+        isResolved = true;
+        worker.stopSearch();
+        
+        if (latestEval) {
+          console.warn('Error during analysis, using best available evaluation:', error);
+          resolve(latestEval);
+        } else {
+          reject(error);
+        }
+      }
+    });
+  });
+}
+
 // Helper function to validate UCI move format
 function isValidUciMove(move: string): boolean {
   // Standard UCI move format: e.g., "e2e4" or "e7e8q" for promotion
@@ -189,9 +326,8 @@ export class Stockfish17 {
           };
           
           try {
-            // Start the search with a dynamic timeout based on depth
-            const timeoutMs = Math.min(30000, options.depth * 2000); // 2 seconds per depth, max 30 seconds
-            await sendCommandsWithCallback(worker, [`go depth ${options.depth}`], 'bestmove', onMessage, timeoutMs);
+            // Start the search without a timeout
+            await sendCommandsWithCallback(worker, [`go depth ${options.depth}`], 'bestmove', onMessage);
           } catch (error) {
             console.error('Evaluation error:', error);
             worker.postMessage('stop'); // Ensure search is stopped on error
@@ -221,13 +357,7 @@ export class Stockfish17 {
           worker.postMessage(`position fen ${fen}`);
           
           try {
-            // Calculate a dynamic timeout based on position complexity and depth
-            // More complex positions and higher depths get more time
-            const baseTimeout = 5000; // 5 seconds base
-            const depthFactor = depth * 500; // 0.5 second per depth level
-            const timeoutMs = baseTimeout + depthFactor;
-            
-            console.log(`Searching for move with depth ${depth}, timeout ${timeoutMs}ms`);
+            console.log(`Searching for move with depth ${depth}`);
             
             // Start the search with retry mechanism
             let attempts = 0;
@@ -238,8 +368,7 @@ export class Stockfish17 {
                 const messages = await sendCommands(
                   worker, 
                   [`go depth ${depth}`], 
-                  'bestmove',
-                  timeoutMs + (attempts * 2000) // Increase timeout on retry
+                  'bestmove'
                 );
                 
                 // Find the bestmove message
@@ -297,14 +426,14 @@ export class Stockfish17 {
 
 /**
  * Send commands to the engine and wait for a specific response
+ * No timeout - will wait indefinitely for the engine to respond
  */
 async function sendCommands(
   worker: Worker,
   commands: string[],
-  finalMessage: string,
-  timeoutMs: number = 10000
+  finalMessage: string
 ): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
+  return new Promise<string[]>((resolve) => {
     const messages: string[] = [];
     
     const messageHandler = (event: MessageEvent) => {
@@ -313,16 +442,9 @@ async function sendCommands(
       
       if (data.includes(finalMessage)) {
         worker.removeEventListener('message', messageHandler);
-        clearTimeout(timeoutId);
         resolve(messages);
       }
     };
-    
-    // Set a timeout to handle cases where the engine doesn't respond
-    const timeoutId = setTimeout(() => {
-      worker.removeEventListener('message', messageHandler);
-      reject(new Error(`Engine command timed out after ${timeoutMs}ms. Waiting for: ${finalMessage}`));
-    }, timeoutMs);
     
     worker.addEventListener('message', messageHandler);
     
@@ -335,15 +457,15 @@ async function sendCommands(
 
 /**
  * Send commands to the engine with a callback for each message received
+ * No timeout - will wait indefinitely for the engine to respond
  */
 async function sendCommandsWithCallback(
   worker: Worker,
   commands: string[],
   finalMessage: string,
-  onMessage: (data: string) => void,
-  timeoutMs: number = 10000
+  onMessage: (data: string) => void
 ): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
+  return new Promise<string[]>((resolve) => {
     const messages: string[] = [];
     
     const messageHandler = (event: MessageEvent) => {
@@ -355,16 +477,9 @@ async function sendCommandsWithCallback(
       
       if (data.includes(finalMessage)) {
         worker.removeEventListener('message', messageHandler);
-        clearTimeout(timeoutId);
         resolve(messages);
       }
     };
-    
-    // Set a timeout to handle cases where the engine doesn't respond
-    const timeoutId = setTimeout(() => {
-      worker.removeEventListener('message', messageHandler);
-      reject(new Error(`Engine command timed out after ${timeoutMs}ms. Waiting for: ${finalMessage}`));
-    }, timeoutMs);
     
     worker.addEventListener('message', messageHandler);
     

@@ -51,9 +51,9 @@ const ProgressBarContainer = styled.div<ContainerProps>`
   margin-bottom: 16px;
 `;
 
-const ProgressFill = styled.div<{ progress: number; theme: { colors: ThemeColors } }>`
+const ProgressFill = styled.div<{ $progress: number; theme: { colors: ThemeColors } }>`
   height: 100%;
-  width: ${props => props.progress * 100}%;
+  width: ${props => props.$progress * 100}%;
   background: ${({ theme }) => theme.colors.accent};
   transition: width 0.3s ease;
 `;
@@ -75,7 +75,7 @@ const AnalysisLoadingScreen: React.FC<LoadingScreenProps> = ({
       <Container theme={theme}>
         <Title theme={theme}>Analyzing Game</Title>
         <ProgressBarContainer theme={theme}>
-          <ProgressFill progress={progress} theme={theme} />
+        <ProgressFill $progress={progress} theme={theme} />
         </ProgressBarContainer>
         <ProgressText theme={theme}>
           Analyzing position {currentPosition}/{totalPositions}
