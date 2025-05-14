@@ -163,6 +163,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
   const theme = useTheme();
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [engine, setEngine] = useState<any>(null);
+  // Using evaluation state for UI updates and parent component notifications
   const [evaluation, setEvaluation] = useState<PositionEvaluation | null>(null);
   const [positions, setPositions] = useState<EvaluatedPosition[]>([]);
   const [currentClassification, setCurrentClassification] = useState<Classification | null>(null);
@@ -177,6 +178,7 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
   // Initialize the worker pool
   const workerPoolRef = useRef<StockfishWorkerPool | null>(null);
   
+  // Initialize engine and worker pool
   useEffect(() => {
     const initWorkerPool = async () => {
       try {
@@ -206,8 +208,10 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
       }
     };
 
+    // Initialize only once
     initWorkerPool();
 
+    // Cleanup function
     return () => {
       // Clean up both the worker pool and single engine
       if (workerPoolRef.current) {
@@ -215,11 +219,13 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
         workerPoolRef.current = null;
       }
       
-      if (engine) {
-        engine.shutdown();
+      // Use a local variable to capture the current engine value for cleanup
+      const currentEngine = engine;
+      if (currentEngine) {
+        currentEngine.shutdown();
       }
     };
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
   
   // Reset to starting position
   const resetToStartingPosition = () => {
@@ -300,34 +306,9 @@ const Analysis: React.FC<AnalysisProps> = ({ position, moveHistory, currentMoveI
     }
   }, [currentMoveIndex, positions, isAnalyzing, onEvaluationChange]);
 
-  // Format evaluation for display
-  const formatEvaluation = (evaluation: PositionEvaluation | null): string => {
-    if (!evaluation || !evaluation.lines || evaluation.lines.length === 0) {
-      return '0.0';
-    }
+  // Removed unused formatEvaluation function
 
-    const line = evaluation.lines[0];
-    if (line.mate !== undefined) {
-      return `M${Math.abs(line.mate)}`;
-    }
-
-    return (line.cp !== undefined ? (line.cp / 100).toFixed(1) : '0.0');
-  };
-
-  // Get evaluation value for the bar
-  const getEvaluationValue = (evaluation: PositionEvaluation | null): number => {
-    if (!evaluation || !evaluation.lines || evaluation.lines.length === 0) {
-      return 50; // Default to 50% (equal position)
-    }
-
-    const line = evaluation.lines[0];
-    const evalObj: Evaluation = {
-      type: line.mate !== undefined ? "mate" : "cp",
-      value: line.mate !== undefined ? line.mate : (line.cp !== undefined ? line.cp / 100 : 0)
-    };
-    
-    return getWinPercentageFromEvaluation(evalObj);
-  };
+  // Removed unused getEvaluationValue function
 
   // Get evaluation type (cp or mate)
   const getEvaluationType = (evaluation: PositionEvaluation | null): 'cp' | 'mate' | null => {
