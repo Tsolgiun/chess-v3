@@ -6,6 +6,7 @@ const { corsMiddleware } = require('./config/cors');
 const { initializeSocketIO } = require('./config/socket');
 const { initializeSocketConnections } = require('./socket/socketManager');
 const { setupCleanupInterval } = require('./services/timerService');
+const { setupSwagger } = require('./config/swagger');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -25,6 +26,9 @@ async function startServer() {
 
         // Add JSON body parser
         app.use(express.json());
+        
+        // Set up Swagger UI
+        setupSwagger(app);
 
         // Create HTTP server
         const server = http.createServer(app);

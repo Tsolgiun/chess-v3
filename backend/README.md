@@ -12,6 +12,7 @@ The backend follows a modular architecture with separation of concerns:
 - **Database Connection**: MongoDB connection in `config/database.js`
 - **CORS Configuration**: CORS settings in `config/cors.js`
 - **Socket.IO Setup**: Socket.IO initialization in `config/socket.js`
+- **API Documentation**: Swagger UI setup in `config/swagger.js`
 
 ### API Routes
 
@@ -34,6 +35,11 @@ The backend follows a modular architecture with separation of concerns:
 
 - **Game Utils**: Helper functions for games in `utils/gameUtils.js`
 
+### API Documentation
+
+- **OpenAPI Specification**: API documentation in `docs/api/openapi.yaml`
+- **Swagger UI**: Interactive API documentation available at `/api-docs` when the server is running
+
 ## Directory Structure
 
 ```
@@ -42,7 +48,8 @@ backend/
 ├── config/
 │   ├── database.js            # Database connection
 │   ├── cors.js                # CORS configuration
-│   └── socket.js              # Socket.IO configuration
+│   ├── socket.js              # Socket.IO configuration
+│   └── swagger.js             # Swagger UI configuration
 ├── middleware/
 │   └── auth.js                # Authentication middleware
 ├── controllers/
@@ -62,10 +69,16 @@ backend/
 │   └── chatHandlers.js        # Chat-related socket events
 ├── utils/
 │   └── gameUtils.js           # Helper functions for games
-└── models/
-    ├── User.js                # User model
-    ├── Game.js                # Game model
-    └── Blog.js                # Blog model
+├── models/
+│   ├── User.js                # User model
+│   ├── Game.js                # Game model
+│   └── Blog.js                # Blog model
+├── docs/
+│   └── api/
+│       ├── openapi.yaml       # OpenAPI specification
+│       └── README.md          # API documentation guide
+└── scripts/
+    └── test-api-docs.js       # Script to test API documentation
 ```
 
 ## Running the Server
@@ -76,3 +89,21 @@ npm start
 ```
 
 The server will start on port 3001 by default, or the port specified in the `.env` file.
+
+## API Documentation
+
+The API is documented using OpenAPI 3.0 specification and Swagger UI. When the server is running, you can access the interactive API documentation at:
+
+```
+http://localhost:3001/api-docs
+```
+
+To quickly test the API documentation, you can run:
+
+```bash
+node scripts/test-api-docs.js
+```
+
+This will start the server and open the API documentation in your default browser.
+
+For more information about the API documentation, see the [API Documentation Guide](docs/api/README.md).

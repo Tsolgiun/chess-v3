@@ -1,0 +1,938 @@
+openapi: 3.0.0
+info:
+  title: Chess Application API
+  description: API documentation for the Chess Application
+  version: 1.0.0
+  contact:
+    name: Chess Application Team
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+  - url: https://api.chessapp.com
+    description: Production server (example)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+        username:
+          type: string
+          description: User's username
+        email:
+          type: string
+          format: email
+          description: User's email address
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Account last update timestamp
+      required:
+        - id
+        - username
+        - email
+
+    UserRegistration:
+      type: object
+      properties:
+        username:
+          type: string
+          description: User's username
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
+      required:
+        - username
+        - email
+        - password
+
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
+      required:
+        - email
+        - password
+
+    UserProfile:
+      type: object
+      properties:
+        username:
+          type: string
+          description: User's username
+        email:
+          type: string
+          format: email
+          description: User's email address
+        bio:
+          type: string
+          description: User's biography
+        rating:
+          type: integer
+          description: User's chess rating
+        gamesPlayed:
+          type: integer
+          description: Number of games played
+        wins:
+          type: integer
+          description: Number of games won
+        losses:
+          type: integer
+          description: Number of games lost
+        draws:
+          type: integer
+          description: Number of games drawn
+      required:
+        - username
+        - email
+
+    ProfileUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          description: User's new username
+        bio:
+          type: string
+          description: User's new biography
+      required: []
+
+    Blog:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique blog identifier
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        author:
+          $ref: '#/components/schemas/User'
+        tags:
+          type: array
+          items:
+            type: string
+          description: Blog tags
+        createdAt:
+          type: string
+          format: date-time
+          description: Blog creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Blog last update timestamp
+      required:
+        - id
+        - title
+        - content
+        - author
+
+    BlogCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        tags:
+          type: array
+          items:
+            type: string
+          description: Blog tags
+      required:
+        - title
+        - content
+
+    BlogUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Blog title
+        content:
+          type: string
+          description: Blog content
+        tags:
+          type: array
+          items:
+            type: string
+          description: Blog tags
+      required: []
+
+    Game:
+      type: object
+      properties:
+        gameId:
+          type: string
+          description: Unique game identifier
+        players:
+          type: object
+          properties:
+            white:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: White player's user ID
+                username:
+                  type: string
+                  description: White player's username
+            black:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: Black player's user ID
+                username:
+                  type: string
+                  description: Black player's username
+        status:
+          type: string
+          enum: [active, completed, abandoned]
+          description: Current game status
+        result:
+          type: string
+          enum: [1-0, 0-1, 1/2-1/2, '*']
+          description: Game result in PGN format
+        pgn:
+          type: string
+          description: Game PGN notation
+        timeControl:
+          type: object
+          properties:
+            initial:
+              type: integer
+              description: Initial time in seconds
+            increment:
+              type: integer
+              description: Time increment in seconds
+        timeRemaining:
+          type: object
+          properties:
+            white:
+              type: integer
+              description: White player's remaining time in seconds
+            black:
+              type: integer
+              description: Black player's remaining time in seconds
+        lastActivity:
+          type: string
+          format: date-time
+          description: Last activity timestamp
+        createdAt:
+          type: string
+          format: date-time
+          description: Game creation timestamp
+      required:
+        - gameId
+        - players
+        - status
+        - timeControl
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        code:
+          type: integer
+          description: Error code
+      required:
+        - message
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Unauthorized access
+            code: 401
+
+    NotFoundError:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Resource not found
+            code: 404
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Server error
+            code: 500
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+            example:
+              username: chessplayer
+              email: player@example.com
+              password: securePassword123
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT authentication token
+                  user:
+                    $ref: '#/components/schemas/User'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                user:
+                  id: 60d21b4667d0d8992e610c85
+                  username: chessplayer
+                  email: player@example.com
+                  createdAt: '2023-06-22T10:00:00Z'
+                  updatedAt: '2023-06-22T10:00:00Z'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Email already in use
+                code: 400
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login a user
+      description: Authenticate a user and get a token
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+            example:
+              email: player@example.com
+              password: securePassword123
+      responses:
+        '200':
+          description: User successfully logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT authentication token
+                  user:
+                    $ref: '#/components/schemas/User'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                user:
+                  id: 60d21b4667d0d8992e610c85
+                  username: chessplayer
+                  email: player@example.com
+                  createdAt: '2023-06-22T10:00:00Z'
+                  updatedAt: '2023-06-22T10:00:00Z'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Invalid email or password
+                code: 400
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get user profile
+      description: Get the authenticated user's profile
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                username: chessplayer
+                email: player@example.com
+                bio: Chess enthusiast from Mongolia
+                rating: 1500
+                gamesPlayed: 42
+                wins: 25
+                losses: 10
+                draws: 7
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - Authentication
+      summary: Update user profile
+      description: Update the authenticated user's profile
+      operationId: updateUserProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+            example:
+              username: chessmaster
+              bio: Professional chess player from Mongolia
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                username: chessmaster
+                email: player@example.com
+                bio: Professional chess player from Mongolia
+                rating: 1500
+                gamesPlayed: 42
+                wins: 25
+                losses: 10
+                draws: 7
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/blog:
+    get:
+      tags:
+        - Blog
+      summary: Get all blogs
+      description: Retrieve a list of all blog posts
+      operationId: getAllBlogs
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blogs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Blog'
+                  total:
+                    type: integer
+                    description: Total number of blogs
+                  page:
+                    type: integer
+                    description: Current page number
+                  pages:
+                    type: integer
+                    description: Total number of pages
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Blog
+      summary: Create a new blog
+      description: Create a new blog post
+      operationId: createBlog
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogCreate'
+            example:
+              title: Chess Opening Strategies
+              content: In this blog post, we'll explore various chess opening strategies...
+              tags: [openings, strategy, beginner]
+      responses:
+        '201':
+          description: Blog post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/blog/{id}:
+    get:
+      tags:
+        - Blog
+      summary: Get blog by ID
+      description: Retrieve a specific blog post by its ID
+      operationId: getBlogById
+      parameters:
+        - name: id
+          in: path
+          description: Blog ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - Blog
+      summary: Update a blog
+      description: Update a specific blog post
+      operationId: updateBlog
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Blog ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogUpdate'
+            example:
+              title: Updated Chess Opening Strategies
+              content: In this updated blog post, we'll explore various chess opening strategies...
+              tags: [openings, strategy, intermediate]
+      responses:
+        '200':
+          description: Blog post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Blog'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - Blog
+      summary: Delete a blog
+      description: Delete a specific blog post
+      operationId: deleteBlog
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Blog ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Blog deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/blog/tag/{tag}:
+    get:
+      tags:
+        - Blog
+      summary: Get blogs by tag
+      description: Retrieve blog posts by a specific tag
+      operationId: getBlogsByTag
+      parameters:
+        - name: tag
+          in: path
+          description: Tag name
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of blog posts with the specified tag
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blogs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Blog'
+                  total:
+                    type: integer
+                    description: Total number of blogs with this tag
+                  page:
+                    type: integer
+                    description: Current page number
+                  pages:
+                    type: integer
+                    description: Total number of pages
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/game/active:
+    get:
+      tags:
+        - Game
+      summary: Get active games
+      description: Retrieve a list of all active games
+      operationId: getActiveGames
+      responses:
+        '200':
+          description: List of active games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    gameId:
+                      type: string
+                      description: Unique game identifier
+                    players:
+                      type: object
+                      properties:
+                        white:
+                          type: object
+                          properties:
+                            userId:
+                              type: string
+                            username:
+                              type: string
+                        black:
+                          type: object
+                          properties:
+                            userId:
+                              type: string
+                            username:
+                              type: string
+                    status:
+                      type: string
+                      enum: [active]
+                    timeControl:
+                      type: object
+                      properties:
+                        initial:
+                          type: integer
+                        increment:
+                          type: integer
+                    timeRemaining:
+                      type: object
+                      properties:
+                        white:
+                          type: integer
+                        black:
+                          type: integer
+                    lastActivity:
+                      type: string
+                      format: date-time
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/game/{gameId}:
+    get:
+      tags:
+        - Game
+      summary: Get game by ID
+      description: Retrieve a specific game by its ID
+      operationId: getGameById
+      parameters:
+        - name: gameId
+          in: path
+          description: Game ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Game retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/game/user/history:
+    get:
+      tags:
+        - Game
+      summary: Get user's games
+      description: Retrieve a list of the authenticated user's completed games
+      operationId: getUserGames
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of user's games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+# Additional information about Socket.IO events (not part of OpenAPI spec)
+x-socket-io-events:
+  connection:
+    description: Establish a Socket.IO connection
+    
+  setPlatform:
+    description: Set the client platform information
+    request:
+      type: object
+      properties:
+        platform:
+          type: string
+          description: Client platform (web, mobile, desktop)
+          
+  createGame:
+    description: Create a new game
+    request:
+      type: object
+      properties:
+        timeControl:
+          type: object
+          properties:
+            initial:
+              type: integer
+              description: Initial time in seconds
+            increment:
+              type: integer
+              description: Time increment in seconds
+        color:
+          type: string
+          enum: [white, black, random]
+          description: Preferred color for the creator
+    response:
+      type: object
+      properties:
+        gameId:
+          type: string
+          description: Unique game identifier
+        color:
+          type: string
+          enum: [white, black]
+          description: Assigned color
+          
+  joinGame:
+    description: Join an existing game
+    request:
+      type: object
+      properties:
+        gameId:
+          type: string
+          description: Game ID to join
+    response:
+      type: object
+      properties:
+        gameId:
+          type: string
+        fen:
+          type: string
+        timeRemaining:
+          type: object
+          properties:
+            white:
+              type: integer
+            black:
+              type: integer
+              
+  move:
+    description: Make a move in a game
+    request:
+      type: object
+      properties:
+        from:
+          type: string
+          description: Source square (e.g., "e2")
+        to:
+          type: string
+          description: Target square (e.g., "e4")
+        promotion:
+          type: string
+          enum: [q, r, n, b]
+          description: Promotion piece if applicable
+    response:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        promotion:
+          type: string
+        fen:
+          type: string
+        timeRemaining:
+          type: object
+          properties:
+            white:
+              type: integer
+            black:
+              type: integer
+        moveNotation:
+          type: string
+          
+  resign:
+    description: Resign from a game
+    
+  offerDraw:
+    description: Offer a draw to the opponent
+    
+  acceptDraw:
+    description: Accept a draw offer
+    
+  declineDraw:
+    description: Decline a draw offer
+    
+  sendMessage:
+    description: Send a chat message
+    request:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Message text
+          
+  message:
+    description: Receive a chat message
+    response:
+      type: object
+      properties:
+        sender:
+          type: string
+          enum: [white, black]
+        text:
+          type: string

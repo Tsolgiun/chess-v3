@@ -4,7 +4,9 @@
   "description": "Chess game server with Socket.IO",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "docs": "node scripts/test-api-docs.js",
+    "api-docs": "node scripts/test-api-docs.js"
   },
   "dependencies": {
     "axios": "^1.8.4",
@@ -16,6 +18,8 @@
     "firebase-admin": "^13.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   }
 }

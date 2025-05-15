@@ -51,7 +51,24 @@ This will start both the frontend engine API server and the backend server.
 
 ### Backend API (port 3001)
 
-The backend exposes its own API endpoints that internally call the Frontend Engine API.
+The backend exposes its own API endpoints that internally call the Frontend Engine API. The complete API documentation is available via Swagger UI when the server is running.
+
+#### API Documentation
+
+The backend API is documented using OpenAPI 3.0 specification and Swagger UI. When the server is running, you can access the interactive API documentation at:
+
+```
+http://localhost:3001/api-docs
+```
+
+To quickly view the API documentation:
+
+```bash
+cd backend
+npm run api-docs
+```
+
+This will start the server and open the API documentation in your default browser.
 
 ## Development
 
