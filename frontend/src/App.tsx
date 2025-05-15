@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, Variants } from 'framer-motion';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import styled from 'styled-components';
 import { GameProvider } from './context/GameContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -16,6 +17,7 @@ import AnalysisPage from './pages/Analysis';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import NavBar from './components/NavBar/NavBar';
+import Footer from './components/Footer/Footer';
 import GameSetup from './components/GameSetup/GameSetup';
 import { PrivateRouteProps, PublicRouteProps } from './types';
 
@@ -122,6 +124,16 @@ const App: React.FC = () => {
   );
 };
 
+// Styled component to apply 90% scaling to all components
+const ScaledContainer = styled.div`
+  transform: scale(0.9);
+  transform-origin: top center;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
 const AppContent: React.FC = () => {
   const theme = useTheme();
   return (
@@ -129,8 +141,11 @@ const AppContent: React.FC = () => {
       <GlobalStyle theme={{ colors: theme.colors }} />
       <GameProvider>
         <div className="App">
-          <NavBar />
-          <AnimatedRoutes />
+          <ScaledContainer>
+            <NavBar />
+            <AnimatedRoutes />
+            <Footer />
+          </ScaledContainer>
         </div>
       </GameProvider>
     </StyledThemeProvider>
