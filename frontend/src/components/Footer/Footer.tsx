@@ -31,8 +31,10 @@ const FooterContainer = styled.footer<FooterProps>`
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   width: 100%;
   margin-top: auto;
-  transform: scale(0.9); /* Make the footer 90% of its original size */
-  
+
+  ${media.md(`
+    display: none;
+  `)}
   ${media.md(`
     padding: 1.2rem 0.8rem;
   `)}

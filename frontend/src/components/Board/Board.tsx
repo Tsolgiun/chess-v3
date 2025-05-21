@@ -17,6 +17,10 @@ const BoardWrapper = styled.div<{ isDisabled?: boolean }>`
     border-radius: 12px;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease, background-color 0.3s ease;
+    @media (min-width: 768px) {
+        transform: scale(0.9);
+        transform-origin: center center;
+    }
     ${props => props.isDisabled && `
         pointer-events: none;
         opacity: 0.8;
@@ -43,7 +47,12 @@ const BoardWrapper = styled.div<{ isDisabled?: boolean }>`
     `)}
     
     &:hover {
-        transform: translateY(-2px);
+        @media (min-width: 768px) {
+            transform: translateY(-2px) scale(0.9);
+        }
+        @media (max-width: 767px) {
+            transform: translateY(-2px);
+        }
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
     }
 `;

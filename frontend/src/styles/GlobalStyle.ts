@@ -42,6 +42,10 @@ const GlobalStyle = createGlobalStyle<GlobalStyleProps>`
     overflow-x: hidden;
     min-height: 100vh;
     width: 100%;
+    zoom: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    transform-origin: top left;
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -124,14 +124,13 @@ const App: React.FC = () => {
   );
 };
 
-// Styled component to apply 90% scaling to all components
+// Main container for the application layout
 const ScaledContainer = styled.div`
-  transform: scale(0.9);
-  transform-origin: top center;
   width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 `;
 
 const AppContent: React.FC = () => {

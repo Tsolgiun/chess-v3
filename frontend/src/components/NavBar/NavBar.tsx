@@ -113,6 +113,7 @@ const BottomNavigation = styled.div`
     padding: 0 5px;
     box-sizing: border-box;
     width: 100%;
+    margin-bottom: env(safe-area-inset-bottom);
   `)}
 `;
 
